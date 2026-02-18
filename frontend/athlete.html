@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GymApp - Athlete</title>
+    <style>
+    :root {
+        --bg: #0f172a;
+        --card-bg: #1e293b;
+        --primary: #38bdf8;
+        --accent: #fbbf24;
+        --danger: #ef4444;
+        --success: #22c55e;
+        --text: #f8fafc;
+        --text-muted: #94a3b8;
+    }
+
+    body {
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    h1, h2, h3 { color: var(--primary); }
+    h1 { font-size: 2.5rem; margin-bottom: 10px; }
+
+    section {
+        background: var(--card-bg);
+        padding: 25px;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 800px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    }
+
+    input, select {
+        background: #0f172a;
+        border: 1px solid #334155;
+        color: white;
+        padding: 10px;
+        border-radius: 6px;
+        margin: 5px 0;
+        width: calc(100% - 22px);
+    }
+
+    button {
+        background: var(--primary);
+        color: #0f172a;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.2s, background 0.2s;
+        margin: 5px;
+    }
+
+    button:hover {
+        background: #7dd3fc;
+        transform: translateY(-2px);
+    }
+
+    button.danger { background: var(--danger); color: white; }
+    button.success { background: var(--success); color: white; }
+    button.secondary { background: var(--text-muted); color: white; }
+
+    .nav-link {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+
+    .card {
+        background: #334155;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 10px 0;
+        border-left: 4px solid var(--primary);
+    }
+
+    .status-card {
+        padding: 20px;
+        border-radius: 10px;
+        margin: 15px 0;
+    }
+
+    .status-active { 
+        background: rgba(34, 197, 94, 0.2); 
+        border-left: 4px solid var(--success); 
+    }
+    .status-expiring { 
+        background: rgba(251, 191, 36, 0.2); 
+        border-left: 4px solid var(--accent); 
+    }
+    .status-expired { 
+        background: rgba(239, 68, 68, 0.2); 
+        border-left: 4px solid var(--danger); 
+    }
+
+    .workout-day-card {
+        border: 1px solid var(--primary);
+        background: var(--card-bg);
+        margin: 20px 0;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .workout-day-header {
+        background: var(--primary);
+        color: var(--bg);
+        margin: 0;
+        padding: 12px 15px;
+        font-size: 1.2rem;
+        text-transform: uppercase;
+    }
+
+    .exercise-item {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 15px;
+        margin: 10px;
+        border-radius: 8px;
+        border-left: 3px solid var(--accent);
+    }
+
+    .exercise-item strong {
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+
+    .checkbox-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+        cursor: pointer;
+        color: var(--accent);
+    }
+
+    .checkbox-container input {
+        width: 18px;
+        height: 18px;
+    }
+
+    .hidden {
+        display: none;
+    }
+    </style>
+</head>
+<body>
+    <h1>🏋️ GymApp - Athlete</h1>
+    <p><a class="nav-link" href="coach.html">→ Switch to Coach View</a></p>
+
+    <!-- LOGIN SECTION -->
+    <section id="login-section">
+        <h2>🔐 Login with Email</h2>
+        <input type="email" id="loginEmail" placeholder="Enter your email">
+        <button type="button" onclick="handleLogin()">Login</button>
+    </section>
+
+    <!-- MEMBER DASHBOARD (Hidden until login) -->
+    <div id="dashboard" class="hidden">
+        
+        <!-- MEMBERSHIP STATUS -->
+        <section>
+            <h2>💳 My Membership</h2>
+            <div id="membership-status"></div>
+        </section>
+
+        <!-- REQUEST PROGRAM -->
+        <section id="request-section">
+            <h2>📝 Request a Program</h2>
+            <div id="request-form">
+                <input type="text" id="goalInput" placeholder="Your goal (strength, weight loss, muscle gain...)">
+                <input type="text" id="levelInput" placeholder="Your level (beginner, intermediate, advanced)">
+                <button type="button" onclick="handleRequestProgram()">Submit Request</button>
+            </div>
+            <div id="request-status"></div>
+        </section>
+
+        <!-- MY PROGRAM -->
+        <section>
+            <h2>📋 My Workout Program</h2>
+            <div id="my-program"></div>
+        </section>
+
+        <!-- LOGOUT -->
+        <section>
+            <button type="button" class="secondary" onclick="handleLogout()">🚪 Logout</button>
+        </section>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/athlete.js"></script>
+</body>
+</html>
