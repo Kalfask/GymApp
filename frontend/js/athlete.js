@@ -290,6 +290,40 @@ function showExerciseVideo(url, name) {
 }
 
 
+async function loadAITips() {
+    const container = document.getElementById('ai-tips');
+    container.innerHTML = '<p style="color: var(--accent);">🤔 Thinking...</p>';
+
+    const goal = currentMember.programRequest ? currentMember.programRequest.goal : 'general fitness';
+    const level = currentMember.programRequest ? currentMember.programRequest.level : 'beginner';
+
+    let exercises = [];
+    if (currentMember.program) {
+        currentMember.program.days.forEach(day => {
+            day.exercises.forEach(ex => {
+                exercises.push(ex.name);
+            });
+        });
+    } 
+
+    try {
+        const result = await getAITips(currentMember.name, goal, level, exercises);
+        
+        if (result.success) { 
+            container.innerHTML = `
+                <div class="card" style="border-left-color: var(--primary);">
+                    <h3 style="color: var(--primary); margin-top: 0;">💡 Your Personalized Tips</h3>
+                    <p style="white-space: pre-line;">${result.tips}</p>
+                </div>
+            `;
+        } else {
+            container.innerHTML = '<p style="color: var(--danger);">Error getting AI tips.</p>';
+        }
+    } catch (error) {
+        console.log('Error getting AI tips:', error);
+        container.innerHTML = '<p style="color: var(--danger);">Error getting AI tips.</p>';
+    }
+}
 
 
 
