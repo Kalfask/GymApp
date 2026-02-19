@@ -3,9 +3,10 @@ const cors = require('cors');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 
-const API_KEY = 'AIzaSyDKxcwb1EN-DvlIjvFWWgnCe5h6Bin0bZE';
+require('dotenv').config();
+
 const { GoogleGenerativeAI} = require('@google/generative-ai');
-const genAI = new GoogleGenerativeAI(API_KEY);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const port = 3000;
 const app = express();

@@ -4,3 +4,5 @@ server/programs
 
 .DS_Store
 Thumbs.db
+
+.env
