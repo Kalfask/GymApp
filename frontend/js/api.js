@@ -116,3 +116,15 @@ function getYoutubeEmbedUrl(url)
     }
 
 
+    // AI tips
+
+    async function getAITips(membername, goal, level, exercises)
+    {
+        const response = await fetch(`${API}/ai/tips`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ membername, goal, level, exercises })
+        });
+        return await response.json();
+    }
+

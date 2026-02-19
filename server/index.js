@@ -3,6 +3,10 @@ const cors = require('cors');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 
+const API_KEY = 'AIzaSyDKxcwb1EN-DvlIjvFWWgnCe5h6Bin0bZE';
+const { GoogleGenerativeAI} = require('@google/generative-ai');
+const genAI = new GoogleGenerativeAI(API_KEY);
+
 const port = 3000;
 const app = express();
 
@@ -319,6 +323,152 @@ app.delete('/exercises/:id', (req, res) => {
     } else {
         res.status(404).json({ message: 'Video not found' });
     }  
+});
+
+
+
+// ============ AI TIPS (with fallback models) ============
+
+const AI_MODELS = [
+    'gemma-3-4b-it',
+    'gemma-3-1b-it',
+    'gemini-2.0-flash-lite',
+    'gemini-2.0-flash',
+    'gemini-2.5-flash'
+];
+
+app.post('/ai/tips', async (req, res) => {
+    const { memberName, goal, level, exercises } = req.body;
+    
+    const prompt = `You are a friendly gym coach. Give 3 short, personalized tips for this athlete:
+        
+Name: ${memberName}
+Goal: ${goal}
+Level: ${level}
+Today's exercises: ${exercises.join(', ')}
+
+Keep each tip to 1-2 sentences. Be motivational and specific to their workout.`;
+
+    // Try each model until one works
+    for (let i = 0; i < AI_MODELS.length; i++) {
+        const modelName = AI_MODELS[i];
+        
+        try {
+            console.log(`Trying model: ${modelName}`);
+            const model = genAI.getGenerativeModel({ model: modelName });
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const tips = response.text();
+            
+            console.log(`Success with model: ${modelName}`);
+            res.json({ success: true, tips, model: modelName });
+            return;  // Exit after success
+            
+        } catch (error) {
+            console.log(`Model ${modelName} failed:`, error.message);
+            // Continue to next model
+        }
+    }
+    
+    // All models failed - use backup tips
+    console.log('All models failed, using backup tips');
+    const backupTips = getBackupTips(memberName, goal, level);
+    res.json({ success: true, tips: backupTips, model: 'backup' });
+});
+
+// Backup tips if all AI models fail
+function getBackupTips(memberName, goal, level) {
+    const tips = {
+        strength: [
+            "Focus on progressive overload - add weight or reps each week.",
+            "Rest 2-3 minutes between heavy compound sets.",
+            "Prioritize sleep for muscle recovery and strength gains."
+        ],
+        weightloss: [
+            "Stay hydrated - drink water before, during, and after workouts.",
+            "Combine cardio with strength training for best results.",
+            "Focus on consistency over intensity."
+        ],
+        muscle: [
+            "Eat protein within 30 minutes after your workout.",
+            "Train each muscle group twice per week for optimal growth.",
+            "Focus on the mind-muscle connection during each rep."
+        ]
+    };
+    
+    const goalKey = goal?.toLowerCase().includes('weight') ? 'weightloss' 
+                  : goal?.toLowerCase().includes('muscle') ? 'muscle' 
+                  : 'strength';
+    
+    const selectedTips = tips[goalKey];
+    
+    return `Hey ${memberName}! Here are your tips:\n\n` +
+           `1. ${selectedTips[0]}\n\n` +
+           `2. ${selectedTips[1]}\n\n` +
+           `3. ${selectedTips[2]}\n\n` +
+           `Keep pushing! 💪`;
+}
+
+
+
+
+
+
+
+
+/*app.post('/ai/tips', async (req, res) => {
+
+    const {memberName, goal, level, exercises} = req.body;
+
+    try
+    {
+
+        const model = genAI.getGenerativeModel({model: 'gemma-3-4b-it' });
+
+        const prompt = `You are a friendly gym coach. Give 3 short, personalized tips for this athlete:
+        
+        Name: ${memberName}
+        Goal: ${goal}
+        Level: ${level}
+        Today's exercises: ${exercises.join(', ')}
+
+        Keep each tip to 1-2 sentences. Be motivational and specific to their workout.`;
+
+        const result = await model.generateContent(prompt);
+        const response = result.response;
+
+        const tips = response.text();
+
+        res.json({success: true, tips});
+
+        
+
+    }catch(error){
+        console.error('Error generating AI tips:', error);
+        res.status(500).json({ success: false, message: 'Failed to generate tips' });
+    }
+
+
+
+
+
+});*/
+
+//test: list available models
+app.get('/ai/models', async (req, res) => {
+
+    try
+    {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_KEY || API_KEY}`);
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        console.error('Error fetching AI models:', error);
+        res.status(500).json({ message: 'Failed to fetch AI models' });
+    }
+    
+
+
 });
 
 
