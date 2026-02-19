@@ -164,19 +164,25 @@ async function displayMyProgram()
             return;
         }
         const program = response.program;
+        const videos = await getExerciseVideos();
         const programHtml = program.days.map(day => `
             <div class="workout-day-card">
                 <h3 class="workout-day-header">${day.dayName}</h3>
                 <div style="padding: 10px;">
-                    ${day.exercises.map((ex, i) => `
+                    ${day.exercises.map((ex, i) => {
+                        //Find matching exercise video
+                        const video = videos.find(v => v.name.toLowerCase() === ex.name.toLowerCase());
+                    
+                        return `
                         <div class="exercise-item">
                             <strong>${ex.name}</strong> - ${ex.setsReps}
                             <strong style="color: var(--accent);"> ${ex.notes ? '| ' + ex.notes : ''}</strong>
+                             ${video ? `<button type="button" onclick="showExerciseVideo('${video.url}', '${ex.name}')" style="margin-top: 5px;">▶️ Watch Video</button>` : ''}
                             <label class="checkbox-container">
                                 <input type="checkbox"> Mark as completed
                             </label>
                         </div>
-                    `).join('')}
+                    `}).join('')}
                 </div>
             </div>
         `).join('');
@@ -225,6 +231,7 @@ async function handleRequestProgram()
 
 async function loadExerciseLibrary()
 {
+    document.getElementById('exercise-library-header').innerText = '🎬 Exercise Video Library';
     const container = document.getElementById('exercise-library');
 
     try
@@ -260,6 +267,27 @@ async function loadExerciseLibrary()
     }
 }
 
+function showExerciseVideo(url, name) {
+    const embedUrl = getYoutubeEmbedUrl(url);
+    document.getElementById('exercise-library-header').innerText = `🎬 Tutorial Video: ${name}`;
+    document.getElementById('exercise-library').innerHTML = `
+        <div class="card">
+            <h3 style="color: var(--primary);">${name}</h3>
+            <iframe 
+                width="100%" 
+                height="315" 
+                src="${embedUrl}" 
+                frameborder="0" 
+                allowfullscreen 
+                style="border-radius: 8px;">
+            </iframe>
+            <button type="button" onclick="loadExerciseLibrary()" style="margin-top: 10px;">← Back to Library</button>
+        </div>
+    `;
+    
+    // Scroll to video
+    document.getElementById('exercise-library').scrollIntoView({ behavior: 'smooth' });
+}
 
 
 
