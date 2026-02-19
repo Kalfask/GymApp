@@ -8,8 +8,10 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static('../frontend'));
 
 let members = [];
+let exerciseVideos = [];
 
 // ============ TEST ============
 app.get('/test', (req, res) => {
@@ -284,6 +286,41 @@ app.get('/members/:id/download', (req, res) => {
         res.status(404).json({ message: 'Program not found' });
     }
 });
+
+
+// ============ EXERCISE VIDEOS ============
+
+// Get all exercise videos
+app.get('/exercises', (req, res) => {
+    res.json(exerciseVideos);
+});
+
+// add new exercise video
+app.post('/exercises', (req, res) => {
+    const { name, url } = req.body;
+    const video = {
+        id: Date.now(),
+        name,
+        url,
+        createdAt: new Date()
+    };
+    exerciseVideos.push(video);
+    console.log('New exercise video added:', video);
+    res.json(video);
+});
+
+// delete exercise video
+app.delete('/exercises/:id', (req, res) => {
+    const videoId = parseInt(req.params.id);
+    const index = exerciseVideos.findIndex(v => v.id === videoId);
+    if (index !== -1) {
+        exerciseVideos.splice(index, 1);
+        res.json({ message: 'Video deleted' });
+    } else {
+        res.status(404).json({ message: 'Video not found' });
+    }  
+});
+
 
 // ============ START SERVER ============
 app.listen(port, () => {

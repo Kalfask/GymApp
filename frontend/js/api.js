@@ -69,3 +69,50 @@ async function getProgram(memberId) {
     const response = await fetch(`${API}/members/${memberId}/program`);
     return await response.json();
 }
+
+
+
+// ============ EXERCISE VIDEOS ============
+// get all exercise video
+async function getExerciseVideos() 
+{
+    const response = await fetch(`${API}/exercises`);
+    return await response.json();
+}
+
+// add new exercise video
+async function addExerciseVideo(name, url) 
+{
+        const response = await fetch(`${API}/exercises`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, url })
+        });
+        return await response.json();
+}
+   
+//delete exercise video
+async function deleteExerciseVideo(id) 
+{
+    const response = await fetch(`${API}/exercises/${id}`, {
+        method: 'DELETE'
+    });
+    return await response.json();
+}
+
+
+//Convert Youtube URL to embeddable format
+function getYoutubeEmbedUrl(url) 
+    {
+        let videoId = '';
+        if(url.includes('watch?v=')) {
+            videoId = url.split('watch?v=')[1].split('&')[0];
+        } else if(url.includes('youtu.be/')) {
+            videoId = url.split('youtu.be/')[1].split('?')[0];
+        } else if(url.includes('youtube.com/embed/')) {
+            videoId = url.split('youtube.com/embed/')[1].split('?')[0];
+        }
+        return `https://www.youtube.com/embed/${videoId}`;
+    }
+
+

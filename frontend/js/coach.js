@@ -332,5 +332,78 @@ function clearProgramForm() {
     dayCount = 1;
 }
 
+// ============ EXERCISE VIDEOS ============
+
+async function loadExerciseVideos() 
+{
+    const videos = await getExerciseVideos();
+    const container = document.getElementById('video-list');
+    
+    if (videos.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-muted);">No exercise videos added yet.</p>';
+        return;
+    }
+    
+    container.innerHTML = videos.map(v => {
+        const embedUrl = getYoutubeEmbedUrl(v.url);
+        console.log('Video URL:', v.url);
+        console.log('Embed URL:', embedUrl);
+        
+        return `
+            <div class="card">
+                <strong>${v.name}</strong>
+                <iframe 
+                    width="100%" 
+                    height="200" 
+                    src="${embedUrl}" 
+                    frameborder="0" 
+                    allowfullscreen 
+                    style="margin: 10px 0; border-radius: 8px;">
+                </iframe>
+                <button type="button" class="danger" onclick="handleDeleteExerciseVideo(${v.id})">🗑️ Delete</button>
+            </div>
+        `;
+    }).join('');
+}
+
+async function handleAddVideo()
+{
+    const name = document.getElementById('exerciseName').value;
+    const url = document.getElementById('youtubeUrl').value;
+    if (!name || !url) {
+        alert('Please fill in both name and URL');
+        return;
+    }
+    try{
+        const response = await addExerciseVideo(name, url);
+        alert('Exercise video added');
+        document.getElementById('exerciseName').value = '';
+        document.getElementById('youtubeUrl').value = '';
+        loadExerciseVideos();
+    }
+    catch(error)
+    {
+        alert('Error adding exercise video');
+        console.log('Error adding exercise video:', error);
+    }
+}
+
+async function handleDeleteExerciseVideo(id)
+{
+    const confirmed = confirm('Are you sure you want to delete this exercise video?');
+    if (confirmed) {
+        try {
+            const response = await deleteExerciseVideo(id);
+            alert('Exercise video deleted');
+            loadExerciseVideos();
+        } catch (error) {
+            alert('Error deleting exercise video');
+            console.log('Error deleting exercise video:', error);
+        }
+    }
+}
+
+
 // ============ LOAD ON START ============
 loadMembers();
+loadExerciseVideos();

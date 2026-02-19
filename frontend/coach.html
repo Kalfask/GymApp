@@ -168,6 +168,19 @@
         <button type="button" class="success" onclick="handleCreateProgram()">Create Program & Generate PDF</button>
     </section>
 
+    <!-- EXERCISE VIDEOS -->
+<section>
+    <h2>🎬 Exercise Video Library</h2>
+    
+    <h3>Add New Video</h3>
+    <input type="text" id="exerciseName" placeholder="Exercise name (e.g., Bench Press)">
+    <input type="text" id="youtubeUrl" placeholder="YouTube URL (e.g., https://www.youtube.com/watch?v=...)">
+    <button type="button" onclick="handleAddVideo()">Add Video</button>
+    
+    <h3>All Videos</h3>
+    <div id="video-list"></div>
+</section>
+
     <script src="js/api.js"></script>
     <script src="js/coach.js"></script>
 </body>
