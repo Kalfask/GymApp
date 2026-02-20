@@ -348,7 +348,13 @@ Goal: ${goal}
 Level: ${level}
 Today's exercises: ${exercises.join(', ')}
 
-Keep each tip to 1-2 sentences. Be motivational and specific to their workout.`;
+Rules:
+-Greet the athlete by name and encourage them
+- Keep each tip to 1-2 sentences
+- Be motivational and specific to their exercises
+- DO NOT ask any questions
+- DO NOT request more information
+- Just give the 3 tips and end with encouragement`;
 
     // Try each model until one works
     for (let i = 0; i < AI_MODELS.length; i++) {

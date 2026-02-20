@@ -48,6 +48,7 @@ function loadDashboard() {
     displayRequestSection();
     displayMyProgram();
     loadExerciseLibrary();
+    loadDaySelector();
 }
 
 function displayMembershipStatus() 
@@ -298,31 +299,83 @@ async function loadAITips() {
     const level = currentMember.programRequest ? currentMember.programRequest.level : 'beginner';
 
     let exercises = [];
-    if (currentMember.program) {
+    let dayName = 'General Workout';
+
+    const daySelect = document.getElementById('selectDay');
+
+    if(daySelect && currentMember.program) 
+    {
+        const selectedValue = daySelect.value;
+        if (selectedValue === 'all') 
+        {
+            currentMember.program.days.forEach((day, index) => 
+            {
+                day.exercises.forEach(ex => {
+                    exercises.push(ex.name);
+                });
+            });
+            dayName = "All Days";
+        }
+        else
+        {
+            const dayIndex = parseInt(selectedValue);
+            const selectedDay = currentMember.program.days[dayIndex];
+            dayName = selectedDay.dayName;
+            exercises = selectedDay.exercises.map(ex => ex.name);
+        }
+    }
+            
+        
+
+    /*if (currentMember.program) {
         currentMember.program.days.forEach(day => {
             day.exercises.forEach(ex => {
                 exercises.push(ex.name);
             });
         });
-    } 
+    } */
 
     try {
         const result = await getAITips(currentMember.name, goal, level, exercises);
         
-        if (result.success) { 
+        if (result.success) {
             container.innerHTML = `
                 <div class="card" style="border-left-color: var(--primary);">
-                    <h3 style="color: var(--primary); margin-top: 0;">💡 Your Personalized Tips</h3>
+                    <h3 style="color: var(--primary); margin-top: 0;">💡 Tips for ${dayName}</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 10px;">
+                        Exercises: ${exercises.length > 0 ? exercises.join(', ') : 'General fitness'}
+                    </p>
                     <p style="white-space: pre-line;">${result.tips}</p>
                 </div>
             `;
-        } else {
-            container.innerHTML = '<p style="color: var(--danger);">Error getting AI tips.</p>';
         }
     } catch (error) {
         console.log('Error getting AI tips:', error);
         container.innerHTML = '<p style="color: var(--danger);">Error getting AI tips.</p>';
     }
+}
+
+
+
+
+function loadDaySelector() 
+{
+    const container = document.getElementById('day-selector');
+
+    if (!currentMember.program) {
+        container.innerHTML = '<p style="color: var(--text-muted);">No program yet - tips will be general.</p>';
+        return;
+    }
+
+    container.innerHTML = `
+        <label for="selectDay" style="color: var(--text-muted);">Select workout day:</label>
+        <select id="selectDay" style="margin-left: 10px;">
+            <option value="all">All Days (General Tips)</option>
+            ${currentMember.program.days.map((day, index) => `
+                <option value="${index}">${day.dayName}</option>
+            `).join('')}
+        </select>
+    `;
 }
 
 
