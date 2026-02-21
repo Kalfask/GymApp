@@ -28,8 +28,25 @@ A full-stack gym management application for coaches and athletes.
 |-------|------------|
 | Frontend | HTML, CSS, JavaScript |
 | Backend | Node.js, Express |
+| Database | Supabase (PostgreSQL) |
 | AI | Google Gemini API |
 | PDF | PDFKit |
+
+## 🚧 Migration Status
+
+Currently migrating from in-memory arrays to Supabase database.
+
+| Route | Status |
+|-------|--------|
+| POST /members | ✅ Migrated |
+| GET /members | ✅ Migrated |
+| GET /members/search/:email | ✅ Migrated |
+| DELETE /members/:id | ✅ Migrated |
+| POST /members/:id/renew | ✅ Migrated |
+| POST /members/:id/request-program | ✅ Migrated |
+| POST /members/:id/create-program | 🔄 In Progress |
+| GET /members/:id/program | ⏳ Pending |
+| Exercise video routes | ⏳ Pending |
 
 ## 📁 Project Structure
 ```
@@ -53,13 +70,14 @@ gymapp/
 
 ### Prerequisites
 - Node.js installed
+- Supabase account (free)
 - Google Gemini API key (free)
 
 ### Installation
 
 1. **Clone the repo**
 ```bash
-   git clone https://github.com/Kalfask/GymApp.git
+   git clone https://github.com/YOUR_USERNAME/gymapp.git
    cd gymapp
 ```
 
@@ -69,40 +87,29 @@ gymapp/
    npm install
 ```
 
-3. **Set up environment variables**
+3. **Set up Supabase**
+   - Create account at https://supabase.com
+   - Create new project
+   - Run SQL to create tables (see PROJECT_PLAN.md)
+
+4. **Set up environment variables**
    
    Create `server/.env` file:
 ```
-   GEMINI_API_KEY=your_api_key_here
+   GEMINI_API_KEY=your_gemini_key
+   SUPABASE_URL=your_supabase_url
+   SUPABASE_KEY=your_supabase_anon_key
 ```
-   
-   Get your free API key at: https://aistudio.google.com/app/apikey
 
-4. **Start the server**
+5. **Start the server**
 ```bash
    node index.js
 ```
 
-5. **Open in browser**
+6. **Open in browser**
 ```
    http://localhost:3000
 ```
-
-## 📱 Usage
-
-### As a Coach:
-1. Open `http://localhost:3000/coach.html`
-2. Add members with their subscription plan
-3. Add exercise videos to the library
-4. Create workout programs when athletes request them
-
-### As an Athlete:
-1. Open `http://localhost:3000/athlete.html`
-2. Login with your email
-3. View your membership status
-4. Request a workout program
-5. View workouts and watch tutorial videos
-6. Get AI tips for your training
 
 ## 🔮 Roadmap
 
@@ -112,16 +119,14 @@ gymapp/
 - [x] PDF generation
 - [x] Exercise video library
 - [x] AI-powered tips
-- [ ] QR code login
-- [ ] Database (Supabase)
+- [x] Supabase database (in progress)
 - [ ] Real authentication
-- [ ] Progress tracking
-- [ ] Mobile app
+- [ ] QR code login
+- [ ] Gamification (XP, badges)
+- [ ] Predictive analytics
+- [ ] AI form checker
+- [ ] React frontend
 - [ ] Spring Boot backend
-
-## 🤝 Contributing
-
-Pull requests are welcome!
 
 ## 📝 License
 
@@ -129,6 +134,8 @@ This project is open source and available under the MIT License.
 
 ## 👨‍💻 Author
 
+**Your Name**
+- GitHub: @KalfasK (https://github.com/kalfask)
 
 ---
 
