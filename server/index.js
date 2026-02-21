@@ -264,8 +264,50 @@ app.delete('/members/:id', async (req, res) => {
     }
 });*/
 
-// Renew membership
-app.post('/members/:id/renew', (req, res) => {
+// Renew membership with Supabase
+app.post('/members/:id/renew', async (req, res) => {
+    const memberId = req.params.id; // No need to parseInt since Supabase IDs are strings
+    const { newplan } = req.body;
+    
+
+    try
+    {
+        // Get the member first
+        const { data, error } = await supabase
+            .from('members')
+            .select('*')
+            .eq('id', memberId)
+            .single();
+        if (error) {
+            throw error;
+        }
+        const member = data;
+
+        const currentEndDate = new Date(member.end_date);
+        let newEndDate = new Date(currentEndDate);
+        if (newplan === 'monthly') {
+            newEndDate.setMonth(newEndDate.getMonth() + 1);
+        } else if (newplan === '3-month') {
+            newEndDate.setMonth(newEndDate.getMonth() + 3);
+        } else if (newplan === 'yearly') {
+            newEndDate.setFullYear(newEndDate.getFullYear() + 1);
+        }
+        await supabase
+            .from('members')
+            .update({ plan: newplan, end_date: newEndDate.toISOString() })
+            .eq('id', memberId);
+        console.log('Membership renewed for member:', member.name);
+        res.json({ message: 'Membership renewed' });
+        
+    } catch (error) {
+        console.error('Error renewing membership:', error);
+        res.status(500).json({ message: 'Failed to renew membership' });
+    }
+
+});
+
+// Renew membership with arrays (without Supabase)
+/*app.post('/members/:id/renew', (req, res) => {
     const memberId = parseInt(req.params.id);
     const { newplan } = req.body;
     const member = members.find(m => m.id === memberId);
@@ -289,12 +331,66 @@ app.post('/members/:id/renew', (req, res) => {
     } else {
         res.status(404).json({ message: 'Member not found' });
     }
-});
+});*/
 
 // ============ PROGRAM REQUESTS ============
 
-// Member requests a program
-app.post('/members/:id/request-program', (req, res) => {
+// Coach requests a program for member with Supabase
+app.post('/members/:id/request-program', async (req, res) => {
+    const memberId = req.params.id; // No need to parseInt since Supabase IDs are strings
+    const { goal, level } = req.body;
+    
+    try{
+        const {data: existing} = await supabase            
+            .from('program_requests')
+            .select('*')
+            .eq('member_id', memberId)
+            .eq('status', 'pending')
+            .maybeSingle();
+
+        if (!existing) {
+             const { data, error } = await supabase
+            .from('program_requests')
+            .insert({
+            member_id: memberId,
+            goal,
+            level,
+            status: 'pending'
+        });
+            if (error) {
+            throw error;
+            }
+            console.log('Program request created for member ID:', memberId);
+            res.json({ message: 'Program request received' });
+        }
+        else
+        {
+            console.log('Overriding pending program request for member ID:', memberId);
+            const { data, error } = await supabase
+            .from('program_requests')
+            .update({ goal, level, status: 'pending' })
+            .eq('id', existing.id);
+            if (error) {
+                throw error;
+            }
+            res.json({ message: 'Existing program request updated' });
+    }
+
+       
+    }
+    catch(error) {
+        console.error('Error creating program request:', error);
+        res.status(500).json({ message: 'Failed to create program request' });
+    }
+
+});
+
+
+
+
+
+// Member requests a program with arrays (without Supabase)
+/*app.post('/members/:id/request-program', (req, res) => {
     const member_id = parseInt(req.params.id);
     const { goal, level } = req.body;
     const member = members.find(m => m.id === member_id);
@@ -310,11 +406,11 @@ app.post('/members/:id/request-program', (req, res) => {
     } else {
         res.status(404).json({ message: 'Member not found' });
     }
-});
+});*/
 
 // ============ PROGRAMS ============
 
-// Coach creates program for member
+// Coach creates program for member 
 app.post('/members/:id/create-program', (req, res) => {
     const member_id = parseInt(req.params.id);
     const { days } = req.body;

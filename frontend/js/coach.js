@@ -52,7 +52,7 @@ async function loadMembers() {
         if (m.program != null) {
             programSection = `
                 <span style="color: var(--success);">✅ Has Program</span>
-                <button type="button" onclick="viewMemberProgram(${m.id})" style="margin-left: 10px;">👁️ View</button>
+                <button type="button" onclick="viewMemberProgram('${m.id}')" style="margin-left: 10px;">👁️ View</button>
                 <a href="${API}/members/${m.id}/download" target="_blank">
                     <button type="button">📥 Download</button>
                 </a>
@@ -77,8 +77,8 @@ async function loadMembers() {
                 </p>
                 <p style="margin: 5px 0;">${programSection}</p>
                 <div style="margin-top: 10px;">
-                    <button type="button" onclick="showRenewPopup(${m.id})">🔄 Renew</button>
-                    <button type="button" class="danger" onclick="handleDeleteMember(${m.id})">🗑️ Delete</button>
+                    <button type="button" onclick="showRenewPopup('${m.id}')">🔄 Renew</button>
+                    <button type="button" class="danger" onclick="handleDeleteMember('${m.id}')">🗑️ Delete</button>
                 </div>
             </div>
         `;
@@ -112,7 +112,7 @@ function showRenewPopup(id) {
                 <option value="yearly">Yearly</option>
             </select>
             <br><br>
-            <button onclick="handleRenew(${id})">Confirm</button>
+            <button onclick="handleRenew('${id}')">Confirm</button>
             <button class="secondary" onclick="closeRenewPopup()">Cancel</button>
         </div>
     `;
@@ -196,7 +196,7 @@ async function loadPendingRequests() {
             <p style="margin: 5px 0; color: var(--text-muted);">
                 Requested: ${new Date(m.programRequest.requestedAt).toLocaleDateString()}
             </p>
-            <button type="button" class="success" onclick="selectMemberForProgram(${m.id})">
+            <button type="button" class="success" onclick="selectMemberForProgram('${m.id}')">
                 ✍️ Create Program
             </button>
         </div>
@@ -360,7 +360,7 @@ async function loadExerciseVideos()
                     allowfullscreen 
                     style="margin: 10px 0; border-radius: 8px;">
                 </iframe>
-                <button type="button" class="danger" onclick="handleDeleteExerciseVideo(${v.id})">🗑️ Delete</button>
+                <button type="button" class="danger" onclick="handleDeleteExerciseVideo('${v.id}')">🗑️ Delete</button>
             </div>
         `;
     }).join('');
