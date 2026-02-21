@@ -8,6 +8,9 @@ require('dotenv').config();
 const { GoogleGenerativeAI} = require('@google/generative-ai');
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+const { createClient } = require('@supabase/supabase-js');
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+
 const port = 3000;
 const app = express();
 
@@ -25,8 +28,49 @@ app.get('/test', (req, res) => {
 
 // ============ MEMBERS ============
 
-// Add new member
-app.post('/members', (req, res) => {
+
+// add new member with Supabase
+app.post('/members', async (req, res) => 
+{
+    const { name, email, phone, plan } = req.body;
+    const start_date = new Date();
+    let end_date = new Date();
+    if (plan === 'monthly') {
+        end_date.setMonth(end_date.getMonth() + 1);
+    } else if (plan === '3-month') {
+        end_date.setMonth(end_date.getMonth() + 3);
+    } else if (plan === 'yearly') {
+        end_date.setFullYear(end_date.getFullYear() + 1);
+    }
+
+    try
+    {
+        const { data, error } = await supabase
+            .from('members')
+            .insert(
+                { name, email, phone, plan, start_date: start_date.toISOString(), end_date: end_date.toISOString() })
+            .select()
+            .single();
+
+        if (error) {
+            throw error;
+        }
+        console.log('New member added to Supabase:', data);
+        res.json({ message: 'Member added', member: data });
+                
+    }
+    catch(error)    {
+        console.error('Error adding member to Supabase:', error);
+        res.status(500).json({ message: 'Failed to add member' });
+    }
+
+});
+
+
+
+// Add new member with arrays
+
+/*app.post('/members', (req, res) => {
     const { name, email, phone, plan } = req.body;
     const date = new Date();
     let endDate = new Date(date);
@@ -56,9 +100,48 @@ app.post('/members', (req, res) => {
     console.log('New member added:', member);
     res.json({ message: 'Member added', member });
 });
+*/
 
-// Get all members
-app.get('/members', (req, res) => {
+
+//Get all members from Supabase
+app.get('/members', async (req, res) => {
+    try
+    {
+        const { data, error } = await supabase
+            .from('members')
+            .select('*');
+        if (error) {
+            throw error;
+        }
+
+        const today = new Date();
+        data.forEach(member => {
+            const endDate = new Date(member.end_date);
+            const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+
+        if (daysLeft < 0) {
+            member.status = 'expired';
+        } else if (daysLeft <= 7) {
+            member.status = 'expiring';
+        } else {
+            member.status = 'active';
+        }
+        member.daysLeft = daysLeft;
+        member.startDate = new Date(member.start_date);
+        member.endDate = endDate;
+        });
+
+        res.json(data);
+    }
+    catch(error) {
+        console.error('Error fetching members from Supabase:', error);
+        res.status(500).json({ message: 'Failed to fetch members' });
+    }
+});
+
+
+// Get all members with arrays (without Supabase)
+/*app.get('/members', (req, res) => {
     const today = new Date();
     
     members.forEach(member => {
@@ -77,9 +160,53 @@ app.get('/members', (req, res) => {
     
     res.json(members);
 });
+*/
 
-// Search member by email
-app.get('/members/search/:email', (req, res) => {
+//Search member by email with Supabase
+app.get('/members/search/:email', async (req, res) => {
+    const search_email = req.params.email.toLowerCase();
+    
+    try {
+        const { data, error } = await supabase
+            .from('members')
+            .select('*')
+            .eq('email', search_email)
+            .single();
+        
+        if (error) {
+            throw error;
+        }
+
+        // data IS the member (not data.member)
+        const today = new Date();
+        const endDate = new Date(data.end_date);
+        const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+    
+        if (daysLeft < 0) {
+            data.status = 'expired';
+        } else if (daysLeft <= 7) {
+            data.status = 'expiring';
+        } else {
+            data.status = 'active';
+        }
+        data.daysLeft = daysLeft;
+        
+        // Add camelCase for frontend
+        data.endDate = data.end_date;
+        data.startDate = data.start_date;
+
+        res.json(data);
+    }
+    catch(error) {
+        console.error('Error searching member by email:', error);
+        // Could be not found OR other error
+        res.status(404).json({ message: 'Member not found' });
+    }
+});
+
+
+// Search member by email (without Supabase, using arrays)
+/*app.get('/members/search/:email', (req, res) => {
     const search_email = req.params.email.toLowerCase();
     const member = members.find(m => m.email.toLowerCase().includes(search_email));
     
@@ -101,10 +228,31 @@ app.get('/members/search/:email', (req, res) => {
     } else {
         res.status(404).json({ message: 'Member not found' });
     }
+});*/
+
+
+//Delete member from Supabase
+app.delete('/members/:id', async (req, res) => {
+    const memberId = req.params.id; // No need to parseInt since Supabase IDs are strings
+    try {
+        const { data, error } = await supabase
+            .from('members')
+            .delete()
+            .eq('id', memberId);
+        if (error) {
+            throw error;
+        }
+        res.json({ message: 'Member deleted' });
+    } catch (error) {
+        console.error('Error deleting member from Supabase:', error);
+        res.status(500).json({ message: 'Failed to delete member' });
+    }
 });
 
-// Delete member
-app.delete('/members/:id', (req, res) => {
+
+
+// Delete member (without Supabase, using arrays)
+/*app.delete('/members/:id', (req, res) => {
     const memberId = parseInt(req.params.id);
     const index = members.findIndex(m => m.id === memberId);
     
@@ -114,7 +262,7 @@ app.delete('/members/:id', (req, res) => {
     } else {
         res.status(404).json({ message: 'Member not found' });
     }
-});
+});*/
 
 // Renew membership
 app.post('/members/:id/renew', (req, res) => {
