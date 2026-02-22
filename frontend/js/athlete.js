@@ -225,6 +225,11 @@ async function handleRequestProgram()
         const updated = await searchMember(currentMember.email);
         if (updated.ok) {
             currentMember = updated.data;
+            const ProgramRequestResult = await getMemberRequest(currentMember.id);
+            currentMember.programRequest = ProgramRequestResult.request;
+
+            const programResult = await getProgram(currentMember.id);
+            currentMember.program = programResult.program;
             loadDashboard();
         }
         // Clear inputs
