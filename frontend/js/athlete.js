@@ -19,6 +19,14 @@ async function handleLogin()
             {
                 
                     currentMember = result.data;
+
+                    const ProgramRequestResult = await getMemberRequest(currentMember.id);
+                    currentMember.programRequest = ProgramRequestResult.request;
+
+                    const programResult = await getProgram(currentMember.id);
+                    currentMember.program = programResult.program;
+
+
                     document.getElementById('login-section').classList.add('hidden');
                     document.getElementById('dashboard').classList.remove('hidden');
                     loadDashboard();

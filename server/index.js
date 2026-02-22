@@ -9,6 +9,7 @@ const { GoogleGenerativeAI} = require('@google/generative-ai');
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const { createClient } = require('@supabase/supabase-js');
+const { request } = require('http');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 const port = 3000;
@@ -685,7 +686,7 @@ app.get('/members/:id/program', async (req, res) => {
             throw programError;
         }
         if (!programData) {
-            res.status(404).json({ program: null });
+            res.json({ program: null });
             return;
         }
         res.json({ program: { days: programData.days, fileUrl: programData.file_url, createdAt: programData.created_at }});
@@ -710,7 +711,41 @@ app.get('/members/:id/program', async (req, res) => {
     } else {
         res.status(404).json({ message: 'Member not found' });
     }
-});/*/
+});*/
+
+
+//GET member's requested program with Supabase
+app.get('/members/:id/request', async (req, res) => {
+    const memberId = req.params.id; // No need to parseInt since Supabase IDs are strings
+
+    try{
+        const { data: requestData, error: requestError } = await supabase
+        .from('program_requests')
+        .select('*')
+        .eq('member_id', memberId)
+        .maybeSingle();
+
+        if (requestError) {
+            throw requestError;
+        }
+        if (!requestData) {
+            res.status(200).json({ request: null });
+            return;
+        }
+        res.json({ request: {
+            goal: requestData.goal,
+            level: requestData.level,
+            status: requestData.status,
+            requestedAt: requestData.created_at
+        } });
+    }
+    catch(error) {
+        console.error('Error fetching program request for member:', error);
+        res.status(500).json({ message: 'Program request not found' });
+    }
+});
+
+
 
 // Download member's PDF
 app.get('/members/:id/download', (req, res) => {

@@ -128,3 +128,12 @@ function getYoutubeEmbedUrl(url)
         return await response.json();
     }
 
+    // Get member's program request
+async function getMemberRequest(memberId) 
+   {
+
+    const response = await fetch(`${API}/members/${memberId}/request`);
+    return await response.json();
+
+   }
+
