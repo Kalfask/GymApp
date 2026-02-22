@@ -410,8 +410,172 @@ app.post('/members/:id/request-program', async (req, res) => {
 
 // ============ PROGRAMS ============
 
-// Coach creates program for member 
-app.post('/members/:id/create-program', (req, res) => {
+// Coach creates program for member with Supabase
+app.post('/members/:id/create-program', async (req, res) => {
+    const memberId = req.params.id; // No need to parseInt since Supabase IDs are strings
+    const { days } = req.body;
+    
+
+    try
+    {
+        const { data: memberData, error: memberError } = await supabase
+            .from('members')
+            .select('*')
+            .eq('id', memberId)
+            .single();
+        
+        if (memberError) {
+            throw memberError;
+        }
+   
+
+        const member = memberData;
+
+        const pdfBuffer = await new Promise((resolve, reject) => {
+            const doc = new PDFDocument({ margin: 50 });
+            const chunks = [];
+            doc.on('data', chunk => chunks.push(chunk));
+            doc.on('end', () => resolve(Buffer.concat(chunks)));
+            doc.on('error', reject);
+       
+
+
+        /*const doc = new PDFDocument({ margin: 50 });
+        const filename = `program_${member.id}_${Date.now()}.pdf`;
+        const filepath = `./programs/${filename}`;
+
+        if (!fs.existsSync('./programs')) {
+            fs.mkdirSync('./programs');
+        }
+
+        doc.pipe(fs.createWriteStream(filepath));*/
+
+        // === HEADER ===
+        doc.rect(0, 0, doc.page.width, 120).fill('#1a1a2e');
+        doc.fillColor('#ffffff')
+           .fontSize(28)
+           .text('WORKOUT PROGRAM', 50, 40, { align: 'center' });
+        doc.fontSize(16)
+           .text(`Athlete: ${member.name}`, 50, 80, { align: 'center' });
+
+        doc.moveDown(4);
+
+        // === DAYS ===
+        let yPosition = 140;
+
+        days.forEach((day, dayIndex) => {
+            if (yPosition > 650) {
+                doc.addPage();
+                yPosition = 50;
+            }
+
+            doc.fillColor('#16213e')
+               .rect(50, yPosition, doc.page.width - 100, 30)
+               .fill();
+            
+            doc.fillColor('#ffffff')
+               .fontSize(14)
+               .text(day.dayName.toUpperCase(), 60, yPosition + 8);
+            
+            yPosition += 40;
+
+            day.exercises.forEach((ex, exIndex) => {
+                if (yPosition > 700) {
+                    doc.addPage();
+                    yPosition = 50;
+                }
+
+                doc.fillColor('#f0f0f0')
+                   .rect(50, yPosition, doc.page.width - 100, 40)
+                   .fill();
+                
+                doc.fillColor('#1a1a2e').fontSize(12);
+                
+                const exerciseText = `${exIndex + 1}. ${ex.name}`;
+                const detailText = `${ex.setsReps} ${ex.notes ? '| ' + ex.notes : ''}`;
+                
+                doc.text(exerciseText, 60, yPosition + 8);
+                doc.fillColor('#666666')
+                   .fontSize(10)
+                   .text(detailText, 60, yPosition + 24);
+                
+                yPosition += 50;
+            });
+
+            yPosition += 20;
+        });
+
+        // === FOOTER ===
+        doc.fillColor('#999999')
+           .fontSize(10)
+           .text(`Generated on ${new Date().toLocaleDateString()}`, 50, doc.page.height - 50, { align: 'center' });
+
+        doc.end();
+
+        }); // End of PDF generation and get buffer
+
+        /*member.program = {
+            days,
+            filename,
+            createdAt: new Date()
+        };*/
+
+        const filename = `program_${member.id}.pdf`;
+        const { data, error } = await supabase
+            .storage
+            .from('programs')
+            .upload(filename, pdfBuffer, {
+                contentType: 'application/pdf',
+                upsert: true
+            });
+        if (error) {
+            throw error;
+        }
+        const { data: urlData } = await supabase
+        .storage.from('programs')
+        .getPublicUrl(filename);
+
+        const fileUrl = urlData.publicUrl;
+
+        //If there was a pending program request, mark it as completed
+        await supabase
+            .from('program_requests')
+            .update({ status: 'completed' })
+            .eq('member_id', memberId)
+            .eq('status', 'pending');
+
+        //If a program already exists for this member, update it. Otherwise, insert new
+        const { data: existingProgram } = await supabase
+            .from('programs')
+            .select('*')
+            .eq('member_id', memberId)
+            .maybeSingle();
+        if (existingProgram) {
+            {
+                const { data, error } = await supabase
+                .from('programs')
+                .update({ days, file_url: fileUrl, created_at: new Date().toISOString() })
+                .eq('member_id', memberId);
+            }
+        } else {
+            const { data, error } = await supabase
+            .from('programs')
+            .insert({ member_id: memberId, days, file_url: fileUrl, created_at: new Date().toISOString() });
+        }
+        res.json({ message: 'Program created!', member: { ...member, program: { days, fileUrl } } });
+    
+     }
+    catch(error) {
+        console.error('Error finding member for program creation:', error);
+        res.status(404).json({ message: 'Member not found' });
+        return;
+    }
+
+});
+
+
+// Coach creates program for member with arrays (without Supabase)
+/*app.post('/members/:id/create-program', (req, res) => {
     const member_id = parseInt(req.params.id);
     const { days } = req.body;
     const member = members.find(m => m.id === member_id);
@@ -505,10 +669,35 @@ app.post('/members/:id/create-program', (req, res) => {
     } else {
         res.status(404).json({ message: 'Member not found' });
     }
+});*/
+
+// Get member's program with Supabase
+app.get('/members/:id/program', async (req, res) => {
+    const memberId = req.params.id; // No need to parseInt since Supabase IDs are strings
+
+    try{
+        const { data: programData, error: programError } = await supabase
+        .from('programs')
+        .select('*')
+        .eq('member_id', memberId)
+        .maybeSingle();
+        if (programError) {
+            throw programError;
+        }
+        if (!programData) {
+            res.status(404).json({ program: null });
+            return;
+        }
+        res.json({ program: { days: programData.days, fileUrl: programData.file_url, createdAt: programData.created_at }});
+    }
+    catch(error) {
+        console.error('Error fetching program for member:', error);
+        res.status(404).json({ message: 'Program not found' });
+    }
 });
 
-// Get member's program
-app.get('/members/:id/program', (req, res) => {
+// Get member's program without Supabase
+/*app.get('/members/:id/program', (req, res) => {
     const member_id = parseInt(req.params.id);
     const member = members.find(m => m.id === member_id);
     
@@ -521,7 +710,7 @@ app.get('/members/:id/program', (req, res) => {
     } else {
         res.status(404).json({ message: 'Member not found' });
     }
-});
+});/*/
 
 // Download member's PDF
 app.get('/members/:id/download', (req, res) => {
