@@ -110,10 +110,14 @@ app.get('/members', async (req, res) => {
     {
         const { data, error } = await supabase
             .from('members')
-            .select('*');
+            .select(`
+                *,programs(*),
+                program_requests(*)`
+            );
         if (error) {
             throw error;
         }
+        console.log('Raw data from Supabase:', JSON.stringify(data, null, 2));
 
         const today = new Date();
         data.forEach(member => {
@@ -130,6 +134,34 @@ app.get('/members', async (req, res) => {
         member.daysLeft = daysLeft;
         member.startDate = new Date(member.start_date);
         member.endDate = endDate;
+        
+        if(member.programs && member.programs.length > 0)
+        {
+            member.program ={
+                days: member.programs[0].days,
+                fileUrl: member.programs[0].file_url,
+                createdAt: member.programs[0].created_at
+            }
+        }
+        else
+        {
+            member.program = null;
+        }
+        delete member.programs; // Remove the original programs field to avoid confusion
+
+            if(member.program_requests && member.program_requests.length > 0)
+            {
+                member.programRequest = {
+                    goal: member.program_requests[0].goal,
+                    level: member.program_requests[0].level,
+                    status: member.program_requests[0].status,
+                    requestedAt: member.program_requests[0].created_at
+                }
+            }
+            else{
+                member.programRequest = null;
+            }
+            delete member.program_requests; // Remove original program_requests field
         });
 
         res.json(data);
@@ -346,7 +378,6 @@ app.post('/members/:id/request-program', async (req, res) => {
             .from('program_requests')
             .select('*')
             .eq('member_id', memberId)
-            .eq('status', 'pending')
             .maybeSingle();
 
         if (!existing) {
@@ -745,10 +776,37 @@ app.get('/members/:id/request', async (req, res) => {
     }
 });
 
+// Download member's PDF with Supabase
+app.get('/members/:id/download', async (req, res) => {
+    const memberId = req.params.id; // No need to parseInt since Supabase IDs are strings
 
+    try{
+        const { data: programData, error: programError } = await supabase
+        .from('programs')
+        .select('*')
+        .eq('member_id', memberId)
+        .maybeSingle();
 
-// Download member's PDF
-app.get('/members/:id/download', (req, res) => {
+        if (programError) {
+            throw programError;
+        }
+        if (!programData || !programData.file_url) {
+            res.status(404).json({ message: 'Program not found or file URL missing' });
+            return;
+        }
+
+        const fileUrl = programData.file_url;
+        res.redirect(fileUrl);
+
+    }catch(error) {
+        console.error('Error fetching program for download:', error);
+        res.status(404).json({ message: 'Program not found' });
+        return;
+    }
+});
+
+// Download member's PDF with arrays (without Supabase)
+/*app.get('/members/:id/download', (req, res) => {
     const member_id = parseInt(req.params.id);
     const member = members.find(m => m.id === member_id);
     
@@ -758,7 +816,7 @@ app.get('/members/:id/download', (req, res) => {
     } else {
         res.status(404).json({ message: 'Program not found' });
     }
-});
+});*/
 
 
 // ============ EXERCISE VIDEOS ============
