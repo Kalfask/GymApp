@@ -821,13 +821,58 @@ app.get('/members/:id/download', async (req, res) => {
 
 // ============ EXERCISE VIDEOS ============
 
-// Get all exercise videos
-app.get('/exercises', (req, res) => {
-    res.json(exerciseVideos);
+
+// Get all exercise videos with Supabase
+app.get('/exercises', async (req, res) => {
+
+    try{
+        const { data, error } = await supabase
+        .from('exercise_videos')
+        .select('*')
+
+        if (error) {
+            throw error;
+        }
+        res.json(data);
+    }
+    catch(error) {
+        console.error('Error fetching exercise videos:', error);
+        res.status(500).json({ message: 'Error fetching exercise videos' });
+    }
 });
 
-// add new exercise video
-app.post('/exercises', (req, res) => {
+// Get all exercise videos without Supabase
+/*app.get('/exercises', (req, res) => {
+    res.json(exerciseVideos);
+});*/
+
+
+// Add new exercise video with Supabase
+app.post('/exercises', async (req, res) => {
+    const { name, url } = req.body;
+
+    try
+    {
+        const { data, error } = await supabase
+        .from('exercise_videos')
+        .insert({ name, url, created_at: new Date().toISOString() })
+        .select()
+        .single();
+        if (error) {
+            throw error;
+        }
+        console.log('New exercise video added to Supabase:', data);
+        res.json(data);
+    }
+    catch(error) 
+    {
+        console.error('Error adding exercise video:', error);
+        res.status(500).json({ message: 'Failed to add exercise video' });
+    }
+});
+
+// add new exercise video without Supabase
+/*app.post('/exercises', (req, res) => {
     const { name, url } = req.body;
     const video = {
         id: Date.now(),
@@ -838,10 +883,31 @@ app.post('/exercises', (req, res) => {
     exerciseVideos.push(video);
     console.log('New exercise video added:', video);
     res.json(video);
+});*/
+
+// Delete exercise video with Supabase
+app.delete('/exercises/:id', async (req, res) => {
+    const videoId = req.params.id; // No need to parseInt since Supabase IDs are strings
+    try
+    {
+        const { data, error } = await supabase
+        .from('exercise_videos')
+        .delete()
+        .eq('id', videoId);
+        if (error) {
+            throw error;
+        }
+        res.json({ message: 'Video deleted successfully' });
+    }
+    catch(error) {
+        console.error('Error deleting exercise video:', error);
+        res.status(500).json({ message: 'Failed to delete exercise video' });
+    }
 });
 
-// delete exercise video
-app.delete('/exercises/:id', (req, res) => {
+
+// delete exercise video without Supabase
+/*app.delete('/exercises/:id', (req, res) => {
     const videoId = parseInt(req.params.id);
     const index = exerciseVideos.findIndex(v => v.id === videoId);
     if (index !== -1) {
@@ -850,7 +916,7 @@ app.delete('/exercises/:id', (req, res) => {
     } else {
         res.status(404).json({ message: 'Video not found' });
     }  
-});
+});*/
 
 
 
