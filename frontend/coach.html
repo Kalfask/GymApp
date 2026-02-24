@@ -107,9 +107,13 @@
     </style>
 </head>
 <body>
-    <h1>🏋️ GymApp - Coach</h1>
-    <p><a class="nav-link" href="athlete.html">→ Switch to Athlete View</a></p>
-
+   <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 800px; margin-bottom: 20px;">
+    <div>
+        <h1>🏋️ GymApp - Coach</h1>
+        <a class="nav-link" href="athlete.html">→ Switch to Athlete View</a>
+    </div>
+    <button onclick="logout()" class="danger">🚪 Logout</button>
+</div>
     <!-- ADD MEMBER -->
     <section>
         <h2>➕ Add New Member</h2>
@@ -182,7 +186,20 @@
     <div id="video-list"></div>
 </section>
 
+    
+
     <script src="js/api.js"></script>
     <script src="js/coach.js"></script>
+    <script >
+        // Check if logged in
+        if (!isLoggedIn()) {
+        window.location.href = 'login.html';
+        }
+         const user = getCurrentUser();
+        if (user && user.role !== 'coach') {
+            alert('Coaches only!');
+            window.location.href = 'athlete.html';
+        }
+    </script>
 </body>
 </html>

@@ -1,135 +1,407 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GymApp - Gym Management System</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏋️</text></svg>">
-    <title>GymApp - Home</title>
     <style>
-    :root {
-        --bg: #0f172a;
-        --card-bg: #1e293b;
-        --primary: #38bdf8;
-        --accent: #fbbf24;
-        --success: #22c55e;
-        --text: #f8fafc;
-        --text-muted: #94a3b8;
-    }
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #38bdf8;
+            --accent: #fbbf24;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
 
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    body {
-        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        color: var(--text);
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
 
-    .logo {
-        font-size: 4rem;
-        margin-bottom: 10px;
-    }
+        /* Navigation */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+        }
 
-    h1 {
-        color: var(--primary);
-        font-size: 3rem;
-        margin-bottom: 10px;
-    }
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text);
+            text-decoration: none;
+        }
 
-    .tagline {
-        color: var(--text-muted);
-        font-size: 1.2rem;
-        margin-bottom: 50px;
-    }
+        .navbar-buttons {
+            display: flex;
+            gap: 15px;
+        }
 
-    .cards {
-        display: flex;
-        gap: 30px;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
+        .btn {
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
 
-    .card {
-        background: var(--card-bg);
-        padding: 40px;
-        border-radius: 16px;
-        text-align: center;
-        width: 280px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        transition: transform 0.3s, box-shadow 0.3s;
-        text-decoration: none;
-        color: var(--text);
-    }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
 
-    .card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-    }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
 
-    .card-icon {
-        font-size: 4rem;
-        margin-bottom: 20px;
-    }
+        .btn-outline:hover {
+            background: var(--primary);
+            color: var(--bg);
+        }
 
-    .card h2 {
-        color: var(--primary);
-        margin-bottom: 15px;
-        font-size: 1.8rem;
-    }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, #0ea5e9 100%);
+            color: var(--bg);
+        }
 
-    .card p {
-        color: var(--text-muted);
-        line-height: 1.6;
-    }
+        .btn-primary:hover {
+            box-shadow: 0 10px 20px rgba(56, 189, 248, 0.3);
+        }
 
-    .card.coach {
-        border-top: 4px solid var(--accent);
-    }
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 120px 20px 60px;
+        }
 
-    .card.athlete {
-        border-top: 4px solid var(--success);
-    }
+        .hero-icon {
+            font-size: 6rem;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
 
-    footer {
-        margin-top: 60px;
-        color: var(--text-muted);
-        font-size: 0.9rem;
-    }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
 
-    footer a {
-        color: var(--primary);
-        text-decoration: none;
-    }
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin-bottom: 40px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn-large {
+            padding: 16px 40px;
+            font-size: 1.1rem;
+            border-radius: 12px;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #16a34a 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 80px 20px;
+            background: var(--card-bg);
+        }
+
+        .features h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 50px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: var(--bg);
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid #334155;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            color: var(--text);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Roles Section */
+        .roles {
+            padding: 80px 20px;
+        }
+
+        .roles h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 50px;
+        }
+
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .role-card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 16px;
+            border: 2px solid transparent;
+            transition: border-color 0.3s;
+        }
+
+        .role-card.coach {
+            border-color: var(--accent);
+        }
+
+        .role-card.athlete {
+            border-color: var(--success);
+        }
+
+        .role-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+
+        .role-card.coach h3 { color: var(--accent); }
+        .role-card.athlete h3 { color: var(--success); }
+
+        .role-card ul {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+        .role-card ul li {
+            padding: 8px 0;
+            color: var(--text-muted);
+            border-bottom: 1px solid #334155;
+        }
+
+        .role-card ul li:last-child {
+            border-bottom: none;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            background: var(--bg);
+            color: var(--text-muted);
+            border-top: 1px solid #334155;
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .navbar {
+                padding: 15px 20px;
+            }
+
+            .navbar-brand {
+                font-size: 1.2rem;
+            }
+
+            .btn {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .hero-icon {
+                font-size: 4rem;
+            }
+
+            .btn-large {
+                padding: 14px 30px;
+                font-size: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="logo">🏋️</div>
-    <h1>GymApp</h1>
-    <p class="tagline">Manage your gym, track your progress</p>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">🏋️ GymApp</a>
+        <div class="navbar-buttons">
+            <a href="login.html" class="btn btn-outline">Login</a>
+            <a href="register.html" class="btn btn-primary">Register</a>
+        </div>
+    </nav>
 
-    <div class="cards">
-        <a href="coach.html" class="card coach">
-            <div class="card-icon">👨‍🏫</div>
-            <h2>Coach</h2>
-            <p>Manage members, create workout programs, and track progress.</p>
-        </a>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-icon">🏋️</div>
+        <h1>GymApp</h1>
+        <p>The complete gym management system for coaches and athletes. Create programs, track progress, and achieve your fitness goals.</p>
+        <div class="hero-buttons">
+            <a href="login.html" class="btn btn-large btn-primary">🔐 Login</a>
+            <a href="register.html" class="btn btn-large btn-success">📝 Create Account</a>
+        </div>
+    </section>
 
-        <a href="athlete.html" class="card athlete">
-            <div class="card-icon">💪</div>
-            <h2>Athlete</h2>
-            <p>View your workouts, request programs, and get AI tips.</p>
-        </a>
-    </div>
+    <!-- Features Section -->
+    <section class="features">
+        <h2>✨ Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3>Member Management</h3>
+                <p>Easily add, manage, and track all your gym members and their subscriptions.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📋</div>
+                <h3>Workout Programs</h3>
+                <p>Create personalized workout programs with exercises, sets, and reps.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📄</div>
+                <h3>PDF Generation</h3>
+                <p>Automatically generate professional PDF workout plans for download.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎬</div>
+                <h3>Exercise Videos</h3>
+                <p>Access a library of exercise tutorial videos linked to your program.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3>AI-Powered Tips</h3>
+                <p>Get personalized workout tips powered by artificial intelligence.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔐</div>
+                <h3>Secure Access</h3>
+                <p>Role-based authentication for coaches and athletes.</p>
+            </div>
+        </div>
+    </section>
 
-    <footer>
-        Made with ❤️ for fitness | <a href="https://github.com/kalfask/gymapp">GitHub</a>
+    <!-- Roles Section -->
+    <section class="roles">
+        <h2>👤 User Roles</h2>
+        <div class="roles-grid">
+            <div class="role-card coach">
+                <h3>🏅 Coach</h3>
+                <ul>
+                    <li>➕ Add and manage members</li>
+                    <li>📋 Create workout programs</li>
+                    <li>📄 Generate PDF plans</li>
+                    <li>🎬 Manage exercise video library</li>
+                    <li>👀 View all member data</li>
+                    <li>🔄 Renew memberships</li>
+                </ul>
+                <a href="login.html" class="btn btn-outline" style="width: 100%; text-align: center;">Coach Login →</a>
+            </div>
+            <div class="role-card athlete">
+                <h3>💪 Athlete</h3>
+                <ul>
+                    <li>📝 Request workout programs</li>
+                    <li>📋 View assigned workouts</li>
+                    <li>📥 Download PDF programs</li>
+                    <li>🎬 Watch exercise tutorials</li>
+                    <li>🤖 Get AI-powered tips</li>
+                    <li>📊 Track membership status</li>
+                </ul>
+                <a href="register.html" class="btn btn-success" style="width: 100%; text-align: center;">Join Now →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Made with ❤️ | <a href="https://github.com/YOUR_USERNAME/gymapp">GitHub</a></p>
+        <p style="margin-top: 10px; font-size: 0.9rem;">© 2024 GymApp - Bachelor's Thesis Project</p>
     </footer>
 </body>
 </html>

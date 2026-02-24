@@ -5,12 +5,18 @@ const fs = require('fs');
 
 require('dotenv').config();
 
+// Initialize Google Generative AI client
 const { GoogleGenerativeAI} = require('@google/generative-ai');
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+// Initialize Supabase client
 const { createClient } = require('@supabase/supabase-js');
 const { request } = require('http');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+
+// For authentication 
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const port = 3000;
 const app = express();
@@ -19,6 +25,15 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('../frontend'));
 
+const publicRoutes = ['/auth/login', '/auth/register', '/test', '/exercises']; // Add any other public routes here
+app.use ((req, res, next) => {
+    if (publicRoutes.some(route => req.path.startsWith(route))) {
+        next(); // Allow access to public routes without authentication
+    } else {
+        authenticateToken(req, res, next); // Require authentication for other routes
+    }
+});
+
 let members = [];
 let exerciseVideos = [];
 
@@ -26,6 +41,112 @@ let exerciseVideos = [];
 app.get('/test', (req, res) => {
     res.send('Server is running!');
 });
+
+
+// ============ AUTHENTICATION ============
+
+//Auth Middleware
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Expecting "Bearer <token>"
+
+    if (!token) {
+        return res.status(401).json({ message: 'No token provided' });
+    }
+
+    try{
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded; // Attach decoded token (user info) to request
+        next(); // Proceed to the next middleware or route handler
+    }
+    catch(error) {
+        console.error('Token verification failed:', error);
+        return res.status(403).json({ message: 'Invalid token' });
+    }
+};
+
+app.get('/auth/test', (req, res) => {
+    res.send('Auth route is working!');
+});
+
+app.post('/auth/register', async (req, res) => {
+    const { email, password, name , phone} = req.body;
+     try {
+        const { data, error } = await supabase
+            .from('members')
+            .select('*')
+            .eq('email', email)
+            .maybeSingle();
+        
+        if (error) {
+            throw error;
+        }
+        if (data) {
+            res.status(400).json({ message: 'Email already registered' });
+            return;
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const { data: newUser, error: insertError } = await supabase
+            .from('members')
+            .insert({ email, password: hashedPassword, name, phone, role:'athlete'})
+            .select()
+            .single();
+        if (insertError) {
+            throw insertError;
+        }
+    }
+    catch(error) {
+        console.error('Error during registration:', error);
+        res.status(500).json({ message: 'Registration failed' });
+    }
+
+
+});
+
+app.post('/auth/login', async (req, res) => {
+    const{email, password} = req.body;
+    try{
+        const { data, error } = await supabase
+        .from('members')
+        .select('*')
+        .eq('email', email)
+        .maybeSingle();
+        if (error) {
+            throw error;
+        }
+        if (!data) {
+            res.status(400).json({ message: 'Email not found' });
+            return;
+        }
+        const member = data;
+        const match = await bcrypt.compare(password, member.password);
+        if (!match) {
+            res.status(400).json({ message: 'Incorrect password' });
+            return;
+        }
+        const token = jwt.sign(
+            {id: member.id, email: member.email, role: member.role},
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        ) 
+        res.json({ token,
+                member: {
+                    id: member.id,
+                    email: member.email,
+                    name: member.name,
+                    phone: member.phone,
+                    role: member.role
+                }
+
+         });
+    }
+    catch(error) {
+        console.error('Error during login:', error);
+        res.status(500).json({ message: 'Login failed' });
+    }
+});
+
 
 // ============ MEMBERS ============
 
