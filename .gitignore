@@ -6,3 +6,5 @@ server/programs
 Thumbs.db
 
 .env
+
+.idea/
