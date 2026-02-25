@@ -3,6 +3,46 @@
 
 let currentMember = null;
 
+
+///automatically login from token in local storage (if exists)
+
+async function init() {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+        try {
+            const result = getCurrentUser();
+            if (result)
+            {
+                const memberResult = await searchMember(result.email);
+                if(memberResult.ok)
+            {
+                
+                    currentMember = memberResult.data;
+
+                    const ProgramRequestResult = await getMemberRequest(currentMember.id);
+                    currentMember.programRequest = ProgramRequestResult.request;
+
+                    const programResult = await getProgram(currentMember.id);
+                    currentMember.program = programResult.program;
+
+
+                    //document.getElementById('login-section').classList.add('hidden');
+                    document.getElementById('dashboard').classList.remove('hidden');
+                    loadDashboard();
+            }
+            else
+            {
+                alert('Member not found. Please check your email.');
+            }
+
+            }
+        }
+        catch (error) {
+            console.log('login error:', error);
+            localStorage.removeItem('authToken');
+        }
+    }
+}
 async function handleLogin() 
     {
         const email = document.getElementById('loginEmail').value;
@@ -14,6 +54,7 @@ async function handleLogin()
         
         try{
             const result = await searchMember(email);
+            
 
             if(result.ok)
             {
@@ -48,7 +89,6 @@ function handleLogout() {
     document.getElementById('dashboard').classList.add('hidden');
     document.getElementById('loginEmail').value = '';
 }
-
 
 
 function loadDashboard() {
@@ -390,6 +430,8 @@ function loadDaySelector()
         </select>
     `;
 }
+
+window.onload = init;
 
 
 
