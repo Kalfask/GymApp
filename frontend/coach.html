@@ -135,18 +135,35 @@
         <div id="renew-section"></div>
     </section>
 
+   <!-- ASSIGN PLAN TO NEW MEMBERS -->
+   <section>
+       <h2>📋 Assign Plan to New Members</h2>
+       <p style="color: var(--text-muted);">Members who registered but have no plan yet</p>
+       <select id="selectNoPlanMember">
+           <option value="">-- Select Member --</option>
+       </select>
+       <select id="selectPlanType">
+           <option value="monthly">Monthly</option>
+           <option value="3-month">3 Months</option>
+           <option value="yearly">Yearly</option>
+       </select>
+       <button type="button" onclick="handleAssignPlan()">Assign Plan</button>
+   </section>
+
     <!-- PENDING REQUESTS -->
     <section>
         <h2>📋 Pending Program Requests</h2>
         <div id="pending-requests"></div>
     </section>
 
-    <!-- CREATE PROGRAM -->
-    <section>
-        <h2>✍️ Create Program for Member</h2>
-        <select id="selectMember">
-            <option value="">-- Select Member --</option>
-        </select>
+
+   <!-- CREATE PROGRAM -->
+   <section>
+       <h2>✍️ Create Program for Member</h2>
+       <select id="selectMember">
+           <option value="">-- Select Member (with plan) --</option>
+       </select>
+
 
         <h3>Workout Days</h3>
         <div id="days">

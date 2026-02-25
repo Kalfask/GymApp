@@ -63,6 +63,7 @@ async function loadMembers() {
             programSection = `<span style="color: var(--text-muted);">No program yet</span>`;
         }
 
+
         return `
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -85,7 +86,7 @@ async function loadMembers() {
     }).join('');
     
     loadPendingRequests();
-    loadMemberSelect();
+    loadMemberSelect(members);
 }
 
 async function handleDeleteMember(id) {
@@ -208,11 +209,22 @@ function selectMemberForProgram(id) {
     document.getElementById('selectMember').scrollIntoView({ behavior: 'smooth' });
 }
 
-async function loadMemberSelect() {
-    const members = await getMembers();
-    const select = document.getElementById('selectMember');
-    select.innerHTML = '<option value="">-- Select Member --</option>' +
-        members.map(m => `
+async function loadMemberSelect(members) {
+
+    const noPlanMembers= members.filter(m=> !m.plan);
+    const withPlanMembers = members.filter(m=> m.plan);
+
+    //Populate dropdown for assign plan section
+    const noPlanSelect = document.getElementById('selectNoPlanMember');
+    noPlanSelect.innerHTML = '<option value="">-- Select Member --</option>';
+    noPlanMembers.forEach(m => {
+        noPlanSelect.innerHTML += `<option value="${m.id}">${m.name} (${m.email})</option>`;
+    });
+
+
+    const withPlanSelect = document.getElementById('selectMember');
+    withPlanSelect.innerHTML = '<option value="">-- Select Member --</option>' +
+        withPlanMembers.map(m => `
             <option value="${m.id}">${m.name} (${m.email})</option>
         `).join('');
 }
@@ -401,6 +413,29 @@ async function handleDeleteExerciseVideo(id)
             console.log('Error deleting exercise video:', error);
         }
     }
+}
+
+async function handleAssignPlan()
+{
+    const MemberId = document.getElementById("selectNoPlanMember").value;
+    const plan = document.getElementById("selectPlanType").value;
+        if (!MemberId) {
+        alert('Please select a member');
+        return;
+    }
+
+    try{
+        const response = await assignPlan(MemberId, plan);
+        alert('Plan Assigned');
+        console.log('Plan Asssigned: ');
+    }
+    catch(error)
+    {
+        alert('Error assigning plan');
+        console.log('Error assigning plan: ', error);
+    }
+    loadMembers();
+    
 }
 
 
