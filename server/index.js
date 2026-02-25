@@ -418,6 +418,45 @@ app.delete('/members/:id', async (req, res) => {
     }
 });*/
 
+//Assign membership
+app.post('/members/:id/assign-plan', async (req,res) =>
+{
+    const memberid = req.params.id;
+    const {newplan} = req.body;
+    // Calculate end date based on plan
+    const start_date = new Date();
+    const end_date = new Date();
+
+        let newEndDate = new Date(end_date);
+        if (newplan === 'monthly') {
+            newEndDate.setMonth(newEndDate.getMonth() + 1);
+        } else if (newplan === '3-month') {
+            newEndDate.setMonth(newEndDate.getMonth() + 3);
+        } else if (newplan === 'yearly') {
+            newEndDate.setFullYear(newEndDate.getFullYear() + 1);
+        }
+
+        try{
+            const{data, error} = await supabase
+            .from("members")
+            .update({plan: newplan, start_date: start_date.toISOString(), end_date: newEndDate.toISOString()})
+            .eq("id",memberid)
+            .select("*")
+            .single();
+            if(error)
+            {
+                throw error;
+            }
+            console.log('Membership assigned for member:', memberid);
+            res.json({ message: 'Membership assigned' });
+
+        }catch(error)
+        {
+            console.log("error updating database",error)
+            res.status(500).json({ message: 'Failed to assign membership' });
+        }
+});
+
 // Renew membership with Supabase
 app.post('/members/:id/renew', async (req, res) => {
     const memberId = req.params.id; // No need to parseInt since Supabase IDs are strings
