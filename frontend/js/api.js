@@ -191,4 +191,16 @@ function getCurrentUser() {
     return user ? JSON.parse(user) : null;
 }
 
+//Assign Plan to null plan members
+async function assignPlan(memberId, plan)
+{
+    const response = await fetch(`${API}/members/${memberId}/assign-plan`,
+    {
+                method: 'POST',
+                headers: getAuthToken(),
+                body: JSON.stringify({ newplan: plan })
+    });
+    return await response.json();
+}
+
 
