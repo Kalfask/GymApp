@@ -177,6 +177,7 @@ app.post('/members', async (req, res) =>
         if (error) {
             throw error;
         }
+        delete data.password;
         console.log('New member added to Supabase:', data);
         res.json({ message: 'Member added', member: data });
                 
@@ -238,10 +239,12 @@ app.get('/members', async (req, res) => {
         if (error) {
             throw error;
         }
-        console.log('Raw data from Supabase:', JSON.stringify(data, null, 2));
+
+
 
         const today = new Date();
         data.forEach(member => {
+            delete member.password;
             const endDate = new Date(member.end_date);
             const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
 
@@ -284,7 +287,7 @@ app.get('/members', async (req, res) => {
             }
             delete member.program_requests; // Remove original program_requests field
         });
-
+        console.log('Raw data from Supabase:', JSON.stringify(data, null, 2));
         res.json(data);
     }
     catch(error) {
@@ -348,7 +351,7 @@ app.get('/members/search/:email', async (req, res) => {
         // Add camelCase for frontend
         data.endDate = data.end_date;
         data.startDate = data.start_date;
-
+        delete data.password;
         res.json(data);
     }
     catch(error) {
@@ -781,6 +784,7 @@ app.post('/members/:id/create-program', async (req, res) => {
             .from('programs')
             .insert({ member_id: memberId, days, file_url: fileUrl, created_at: new Date().toISOString() });
         }
+        delete member.password;
         res.json({ message: 'Program created!', member: { ...member, program: { days, fileUrl } } });
     
      }
