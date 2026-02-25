@@ -423,6 +423,33 @@ app.post('/members/:id/assign-plan', async (req,res) =>
 {
     const memberid = req.params.id;
     const {newplan} = req.body;
+    try{
+        const {data: member,error: memberError} = await supabase
+    .from("members")
+    .select("*")
+    .eq("id",memberid)
+    .single();
+
+    if(memberError){
+        throw memberError;
+    }
+
+    if(member.plan)
+    {
+        console.log("Member already has a plan with plan: ", member.plan);
+        res.json({message: 'member already has a plan'});
+        return;
+    }
+
+    }
+    catch(error)
+    {
+       console.log("error finding the member",error)
+       res.status(500).json({ message: 'Failed to find member' });
+       return;
+    }
+    
+
     // Calculate end date based on plan
     const start_date = new Date();
     const end_date = new Date();
