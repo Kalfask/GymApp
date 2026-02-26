@@ -1275,6 +1275,7 @@ function calculateLevel(xp)
     }
     return 10;
 }
+
 //completing a workout route
 app.post('/members/:id/complete-workout', async (req, res) =>{
     const memberId = req.params.id;
