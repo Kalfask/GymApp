@@ -17,6 +17,7 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY
 // For authentication 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { error } = require('console');
 
 const port = 3000;
 const app = express();
@@ -1260,6 +1261,169 @@ app.get('/ai/models', async (req, res) => {
 
 
 });
+
+//GAMIFICATION ROUTES
+
+function calculateLevel(xp)
+{
+    const levelThresholds = [0,100,300,600,1000,1500,2500,4000,6000,10000];
+
+    for(let i =0; i< levelThresholds.length-1; i++)
+    {
+        if(xp<levelThresholds[i+1])
+        return i+1
+    }
+    return 10;
+}
+//completing a workout route
+app.post('/members/:id/complete-workout', async (req, res) =>{
+    const memberId = req.params.id;
+    
+    try
+    {
+        let xpEarned=50;
+        let streak;
+
+        const{data: member, error: memberError} = await supabase
+        .from('members')
+        .select('*')
+        .eq('id',memberId)
+        .single();
+        delete member.password;
+        const today = new Date().toDateString();
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate()-1);
+        const yesterdayString = yesterday.toDateString();
+
+        const lastWorkout = member.last_workout_date ? new Date(member.last_workout_date).toDateString() : null;
+        if(lastWorkout === today)
+        {
+            console.log("Member already worked out today");
+            res.json({message: "Member already worked out today"});
+            return;
+        }
+        else if(lastWorkout === yesterdayString)
+        {
+            streak = member.streak +1
+            console.log("Streak continues:", streak);
+            console.log("Workout out yesterday");
+           
+        }
+        else if(!lastWorkout)
+        {
+            streak = 1;
+            console.log("First workout is today");
+            
+        }
+        else
+        {
+            streak = 1;
+            console.log("Streak Lost");
+            
+        }
+        
+        if(streak===7)
+        {
+            xpEarned+=100;
+        }
+        else if(streak ===30)
+        {
+            xpEarned+=500;
+        }
+
+        const newXp = member.xp +xpEarned;
+
+
+        let level = calculateLevel(newXp);
+        /*if(newXp<100) {level=1;}
+        else if(newXp<300) {level=2;}
+        else if(newXp<600) {level=3;}
+        else if(newXp<1000) {level=4;}
+        else if(newXp<1500) {level=5;}
+        else if(newXp<2500) {level=6;}
+        else if(newXp<4000) {level=7;}
+        else if(newXp<6000) {level=8;}
+        else if(newXp<10000) {level=9;}
+        else {level=10;}*/
+
+        member.total_workouts = member.total_workouts +1;
+       
+        await supabase
+        .from("members")
+        .update({xp: newXp, level: level, last_workout_date: new Date().toISOString(), total_workouts: member.total_workouts, streak: streak})
+        .eq("id",memberId);
+
+        res.json({
+        message: `Workout completed!`,
+        xpEarned: xpEarned,
+        totalXp: newXp,
+        streak: streak,
+        level: level
+});
+
+
+    }
+    catch(error)
+    {
+        console.log('Error completing workout:', error);
+        res.status(500).json({ message: 'Failed to complete workout' });
+    }
+});
+
+app.post('/members/:id/watch-video', async (req, res) => {
+    const memberId = req.params.id;
+    
+    try {
+        const { data: member, error } = await supabase
+            .from('members')
+            .select('*')
+            .eq('id', memberId)
+            .single();
+
+        if (error) throw error;
+
+        // Calculate new XP
+        const xpEarned = 10;
+        const newXp = (member.xp || 0) + xpEarned;
+
+        // Calculate level (same as workout)
+        let level = calculateLevel(newXp);
+        /*if (newXp < 100) { level = 1; }
+        else if (newXp < 300) { level = 2; }
+        else if (newXp < 600) { level = 3; }
+        else if (newXp < 1000) { level = 4; }
+        else if (newXp < 1500) { level = 5; }
+        else if (newXp < 2500) { level = 6; }
+        else if (newXp < 4000) { level = 7; }
+        else if (newXp < 6000) { level = 8; }
+        else if (newXp < 10000) { level = 9; }
+        else { level = 10; }*/
+
+        // Update database
+        await supabase
+            .from('members')
+            .update({
+                xp: newXp,
+                level: level,
+                videos_watched: (member.videos_watched || 0) + 1
+            })
+            .eq('id', memberId);
+
+        // Send response
+        res.json({
+            message: 'Video watched!',
+            xpEarned: xpEarned,
+            totalXp: newXp,
+            level: level,
+            videosWatched: (member.videos_watched || 0) + 1
+        });
+        
+    } catch (error) {
+        console.log('Error:', error);
+        res.status(500).json({ message: 'Failed to record video' });
+    }
+});
+
 
 
 // ============ START SERVER ============
