@@ -393,6 +393,14 @@ app.get('/members/search/:email', async (req, res) => {
 app.delete('/members/:id', async (req, res) => {
     const memberId = req.params.id; // No need to parseInt since Supabase IDs are strings
     try {
+
+         const filename = `program_${memberId}.pdf`;
+        await supabase.storage
+            .from('programs')
+            .remove([filename]);
+        console.log('PDF deleted from storage');
+
+        // // 2. Delete member (CASCADE handles related tables)
         const { data, error } = await supabase
             .from('members')
             .delete()
@@ -1264,6 +1272,47 @@ app.get('/ai/models', async (req, res) => {
 
 //GAMIFICATION ROUTES
 
+async function checkAndAwardBadges(memberId, stats) {
+    // stats = { totalWorkouts, streak, level, videosWatched }
+    
+    const statsMap = {
+        'workouts': stats.totalWorkouts,
+        'streak': stats.streak,
+        'level': stats.level,
+        'videos': stats.videosWatched
+    };
+
+    try {
+        const { data: badges, error: badgeError } = await supabase
+            .from('badges')
+            .select('*');
+
+        const { data: member_badges, error: memberBadgesError } = await supabase
+            .from('member_badges')
+            .select('*')
+            .eq('member_id', memberId);
+
+        for (const badge of badges) {
+            const alreadyHas = member_badges.find(mb => mb.badge_id === badge.id);
+            if (alreadyHas) continue;
+
+            if (statsMap[badge.requirement_type] >= badge.requirement_value) {
+                await supabase
+                    .from('member_badges')
+                    .insert({
+                        member_id: memberId,
+                        badge_id: badge.id,
+                        earned_at: new Date().toISOString()
+                    });
+                console.log(`Badge awarded: ${badge.name}`);
+            }
+        }
+    }
+    catch(error) {
+        console.log("Error checking and awarding badges:", error);
+    }
+}
+
 function calculateLevel(xp)
 {
     const levelThresholds = [0,100,300,600,1000,1500,2500,4000,6000,10000];
@@ -1354,6 +1403,13 @@ app.post('/members/:id/complete-workout', async (req, res) =>{
         .update({xp: newXp, level: level, last_workout_date: new Date().toISOString(), total_workouts: member.total_workouts, streak: streak})
         .eq("id",memberId);
 
+        await checkAndAwardBadges(memberId, {
+        totalWorkouts: (member.total_workouts || 0) + 1,
+        streak: streak,
+        level: level,
+        videosWatched: member.videos_watched || 0
+});
+
         res.json({
         message: `Workout completed!`,
         xpEarned: xpEarned,
@@ -1409,6 +1465,13 @@ app.post('/members/:id/watch-video', async (req, res) => {
                 videos_watched: (member.videos_watched || 0) + 1
             })
             .eq('id', memberId);
+
+            await checkAndAwardBadges(memberId, {
+            totalWorkouts: member.total_workouts || 0,
+            streak: member.streak || 0,
+            level: level,
+            videosWatched: (member.videos_watched || 0) + 1
+});
 
         // Send response
         res.json({
