@@ -978,33 +978,42 @@ app.get('/members/:id/request', async (req, res) => {
 
 // Download member's PDF with Supabase
 app.get('/members/:id/download', async (req, res) => {
-    const memberId = req.params.id; // No need to parseInt since Supabase IDs are strings
+    const memberId = req.params.id;
 
-    try{
+    try {
         const { data: programData, error: programError } = await supabase
-        .from('programs')
-        .select('*')
-        .eq('member_id', memberId)
-        .maybeSingle();
+            .from('programs')
+            .select('*')
+            .eq('member_id', memberId)
+            .maybeSingle();
 
-        if (programError) {
-            throw programError;
-        }
+        if (programError) throw programError;
+        
         if (!programData || !programData.file_url) {
-            res.status(404).json({ message: 'Program not found or file URL missing' });
+            res.status(404).json({ message: 'Program not found' });
             return;
         }
 
-        const fileUrl = programData.file_url;
-        res.redirect(fileUrl);
+        // Fetch PDF from Supabase Storage
+        const filename = `program_${memberId}.pdf`;
+        const { data, error } = await supabase.storage
+            .from('programs')
+            .download(filename);
+        
+        if (error) throw error;
 
-    }catch(error) {
-        console.error('Error fetching program for download:', error);
-        res.status(404).json({ message: 'Program not found' });
-        return;
+        // Send PDF to client
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        
+        const buffer = Buffer.from(await data.arrayBuffer());
+        res.send(buffer);
+
+    } catch (error) {
+        console.error('Error downloading:', error);
+        res.status(500).json({ message: 'Download failed' });
     }
 });
-
 // Download member's PDF with arrays (without Supabase)
 /*app.get('/members/:id/download', (req, res) => {
     const member_id = parseInt(req.params.id);
