@@ -239,9 +239,9 @@ async function displayMyProgram()
         container.innerHTML = `
         <p style="color: var(--text-muted);">Created: ${new Date(program.createdAt).toLocaleDateString()}</p>
         ${programHtml}
-        <a href="${API}/members/${currentMember.id}/download" target="_blank">
-        <button type="button" class="success">📥 Download PDF</button>
-        </a>
+        
+        <button type="button" onclick="downloadProgram('${currentMember.id}')"class="success">📥 Download PDF</button>
+                   
         `;
     }catch (error) {
         console.log('Error loading program:', error);

@@ -203,4 +203,34 @@ async function assignPlan(memberId, plan)
     return await response.json();
 }
 
-
+async function downloadProgram(memberId) {
+    try {
+        const response = await fetch(`${API}/members/${memberId}/download`, {
+            method: 'GET',
+            headers:  getAuthToken()
+        });
+        
+        if (!response.ok) {
+            throw new Error('Download failed');
+        }
+        
+        // Get the PDF as blob
+        const blob = await response.blob();
+        
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `program_${memberId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Cleanup
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+    } catch (error) {
+        console.log('Download error:', error);
+        alert('Failed to download program');
+    }
+}
