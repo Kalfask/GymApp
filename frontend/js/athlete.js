@@ -323,7 +323,11 @@ async function loadExerciseLibrary()
     }
 }
 
-function showExerciseVideo(url, name) {
+async function showExerciseVideo(url, name) {
+
+    await watchVideo(currentMember.id);
+    loadStats();
+    loadLeaderboard();
     const embedUrl = getYoutubeEmbedUrl(url);
     document.getElementById('exercise-library-header').innerText = `🎬 Tutorial Video: ${name}`;
     document.getElementById('exercise-library').innerHTML = `
