@@ -234,3 +234,45 @@ async function downloadProgram(memberId) {
         alert('Failed to download program');
     }
 }
+
+// ============ GAMIFICATION ============
+
+// Get member stats
+async function getStats(memberId) {
+    const response = await fetch(`${API}/members/${memberId}/stats`,
+    {
+                method: 'GET',
+                headers: getAuthToken()
+    });
+    return await response.json();
+}
+
+// Get leaderboard
+async function getLeaderboard() {
+    const response = await fetch(`${API}/leaderboard`,
+    {
+                method: 'GET',
+                headers: getAuthToken()
+    });
+    return await response.json();
+}
+
+// Complete workout
+async function completeWorkout(memberId) {
+    const response = await fetch(`${API}/members/${memberId}/complete-workout`,
+    {
+                method: 'POST',
+                headers: getAuthToken()
+    });
+    return await response.json();
+}
+
+// Watch video
+async function watchVideo(memberId) {
+    const response = await fetch(`${API}/members/${memberId}/watch-video`,
+    {
+                method: 'POST',
+                headers: getAuthToken()
+    });
+    return await response.json();
+}

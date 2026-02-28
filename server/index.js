@@ -1497,6 +1497,71 @@ app.post('/members/:id/watch-video', async (req, res) => {
     }
 });
 
+//get stats 
+app.get('/members/:id/stats', async (req, res) =>{
+   const memberId = req.params.id;
+
+   try {
+    const { data: member, error: memberError } = await supabase
+    .from('members')
+    .select('*')
+    .eq('id', memberId)
+    .single();
+
+    if(memberError){
+        throw memberError;
+    }
+
+    const {data: MemberBadges , error: BadgeError} = await supabase
+    .from('member_badges')
+    .select('earned_at, badges(name, icon)')
+    .eq("member_id",memberId)
+
+    if(BadgeError) 
+    {
+        throw BadgeError
+    }
+
+
+   res.json({
+            xp: member.xp || 0,
+            level: member.level || 1,
+            streak: member.streak || 0,
+            totalWorkouts: member.total_workouts || 0,
+            videosWatched: member.videos_watched || 0,
+            badges: MemberBadges || []
+        });
+ 
+
+
+   }catch(error){
+    console.log('Error getting stats:', error);
+    res.status(500).json({ message: 'Failed to get stats' });
+   }
+
+}); 
+
+//create leaderboard
+app.get('/leaderboard', async (req, res) => {
+    try {
+    const { data: leaderboard, error: memberError } = await supabase
+    .from('members')
+    .select('name, xp, level')
+    .order('xp', { ascending: false })
+    .limit(10);
+    
+    if(memberError){
+        throw memberError
+    }
+        
+    res.json(leaderboard);
+    
+    } catch (error) {
+        console.log('Error getting leaderboard:', error);
+        res.status(500).json({ message: 'Failed to get leaderboard' });
+    }
+
+});
 
 
 // ============ START SERVER ============

@@ -97,6 +97,8 @@ function loadDashboard() {
     displayMyProgram();
     loadExerciseLibrary();
     loadDaySelector();
+    loadStats();        
+    loadLeaderboard()
 }
 
 function displayMembershipStatus() 
@@ -431,6 +433,119 @@ function loadDaySelector()
     `;
 }
 
+
+// ============ GAMIFICATION ============
+
+async function loadStats() {
+    const container = document.getElementById('gamification-stats');
+    
+    try {
+        const stats = await getStats(currentMember.id);
+        
+        // Level titles
+        const levelTitles = ['', 'Beginner', 'Rookie', 'Regular', 'Committed', 'Athlete', 'Advanced', 'Expert', 'Elite', 'Champion', 'Master'];
+        const levelTitle = levelTitles[stats.level] || 'Beginner';
+        
+        // XP for next level
+        const levelThresholds = [0, 100, 300, 600, 1000, 1500, 2500, 4000, 6000, 10000];
+        const currentLevelXp = levelThresholds[stats.level - 1] || 0;
+        const nextLevelXp = levelThresholds[stats.level] || 10000;
+        const xpProgress = ((stats.xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100;
+        
+        // Badges HTML
+        const badgesHtml = stats.badges.length > 0 
+            ? stats.badges.map(b => `<span title="${b.badges.name}">${b.badges.icon}</span>`).join(' ')
+            : '<span style="color: var(--text-muted);">No badges yet</span>';
+        
+        container.innerHTML = `
+            <div class="stats-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div class="card">
+                    <h3 style="margin: 0; color: var(--primary);">⭐ Level ${stats.level}</h3>
+                    <p style="margin: 5px 0; color: var(--accent);">${levelTitle}</p>
+                    <div style="background: #334155; border-radius: 10px; height: 20px; margin-top: 10px;">
+                        <div style="background: var(--primary); height: 100%; border-radius: 10px; width: ${xpProgress}%;"></div>
+                    </div>
+                    <p style="margin: 5px 0; color: var(--text-muted); font-size: 0.9rem;">${stats.xp} / ${nextLevelXp} XP</p>
+                </div>
+                
+                <div class="card">
+                    <h3 style="margin: 0; color: var(--primary);">🔥 Streak</h3>
+                    <p style="margin: 5px 0; font-size: 2rem; color: var(--accent);">${stats.streak} days</p>
+                    <p style="margin: 5px 0; color: var(--text-muted);">Total workouts: ${stats.totalWorkouts}</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3 style="margin: 0 0 10px 0; color: var(--primary);">🏅 Badges</h3>
+                <div style="font-size: 1.5rem;">${badgesHtml}</div>
+            </div>
+        `;
+        
+    } catch (error) {
+        console.log('Error loading stats:', error);
+        container.innerHTML = '<p style="color: var(--danger);">Error loading stats</p>';
+    }
+}
+
+async function loadLeaderboard() {
+    const container = document.getElementById('leaderboard');
+    
+    try {
+        const leaderboard = await getLeaderboard();
+        
+        if (leaderboard.length === 0) {
+            container.innerHTML = '<p style="color: var(--text-muted);">No data yet</p>';
+            return;
+        }
+        
+        container.innerHTML = leaderboard.map((member, index) => {
+            const rank = index + 1;
+            let medal = '';
+            if (rank === 1) medal = '🥇';
+            else if (rank === 2) medal = '🥈';
+            else if (rank === 3) medal = '🥉';
+            else medal = `#${rank}`;
+            
+            const isMe = currentMember && member.name === currentMember.name;
+            const highlight = isMe ? 'border: 2px solid var(--accent);' : '';
+            
+            return `
+                <div class="card" style="${highlight} display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="font-size: 1.2rem; margin-right: 10px;">${medal}</span>
+                        <strong>${member.name}</strong> ${isMe ? '(You)' : ''}
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="color: var(--primary);">${member.xp} XP</span>
+                        <span style="color: var(--text-muted); margin-left: 10px;">Lvl ${member.level}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+    } catch (error) {
+        console.log('Error loading leaderboard:', error);
+        container.innerHTML = '<p style="color: var(--danger);">Error loading leaderboard</p>';
+    }
+}
+
+async function handleCompleteWorkout() {
+    try {
+        const result = await completeWorkout(currentMember.id);
+        
+        if (result.message === 'Already worked out today') {
+            alert('You already completed your workout today! 💪');
+        } else {
+            alert(`Workout complete! +${result.xpEarned} XP 🎉`);
+            loadStats();  // Refresh stats
+            loadLeaderboard();  // Refresh leaderboard
+        }
+        
+    } catch (error) {
+        console.log('Error completing workout:', error);
+        alert('Error completing workout');
+    }
+}
 window.onload = init;
 
 
