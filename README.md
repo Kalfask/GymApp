@@ -1,142 +1,144 @@
 # 🏋️ GymApp
 
-A full-stack gym management application for coaches and athletes.
+A gym management system for personal trainers and their athletes.
+
+![Version](https://img.shields.io/badge/version-2.0-blue)
+![React](https://img.shields.io/badge/React-18-61DAFB)
+![Tailwind](https://img.shields.io/badge/Tailwind-4.0-38BDF8)
+![Node](https://img.shields.io/badge/Node.js-18+-339933)
+
+---
 
 ## ✨ Features
 
-### Coach Dashboard
-- ➕ Add and manage gym members
-- 💳 Track membership plans (monthly, 3-month, yearly)
-- 🔄 Renew memberships
-- 📋 View program requests from athletes
-- ✍️ Create personalized workout programs
-- 📄 Auto-generate PDF workout plans
-- 🎬 Manage exercise video library (YouTube)
+- 🔐 **Authentication** - JWT-based secure login/register
+- 👥 **Member Management** - Add, edit, delete members
+- 📋 **Workout Programs** - Create custom programs + PDF generation
+- 🎬 **Exercise Library** - YouTube video tutorials
+- 🤖 **AI Coach Tips** - Personalized tips powered by Gemini AI
+- 🎮 **Gamification** - XP, levels, streaks, badges, leaderboard
 
-### Athlete Dashboard
-- 🔐 Login with email
-- 💳 View membership status
-- 📝 Request workout programs
-- 📋 View assigned workouts
-- ▶️ Watch exercise tutorial videos
-- 🤖 Get AI-powered personalized tips
-- 📥 Download workout PDF
+---
 
-## 🛠️ Tech Stack
+## 🛠 Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | HTML, CSS, JavaScript |
-| Backend | Node.js, Express |
-| Database | Supabase (PostgreSQL) |
-| AI | Google Gemini API |
-| PDF | PDFKit |
+### Backend
+- Node.js + Express
+- Supabase (PostgreSQL + Storage)
+- JWT + bcrypt
 
-## 🚧 Migration Status
+### Frontend
+- React 18 + Vite
+- Tailwind CSS v4
+- *(Original vanilla JS version also available)*
 
-Currently migrating from in-memory arrays to Supabase database.
-
-| Route | Status |
-|-------|--------|
-| POST /members | ✅ Migrated |
-| GET /members | ✅ Migrated |
-| GET /members/search/:email | ✅ Migrated |
-| DELETE /members/:id | ✅ Migrated |
-| POST /members/:id/renew | ✅ Migrated |
-| POST /members/:id/request-program | ✅ Migrated |
-| POST /members/:id/create-program | 🔄 In Progress |
-| GET /members/:id/program | ⏳ Pending |
-| Exercise video routes | ⏳ Pending |
-
-## 📁 Project Structure
-```
-gymapp/
-├── server/
-│   ├── index.js        # Backend routes & logic
-│   ├── package.json    # Dependencies
-│   ├── .env            # API keys (not in repo)
-│   └── programs/       # Generated PDFs
-└── frontend/
-    ├── index.html      # Home page
-    ├── coach.html      # Coach dashboard
-    ├── athlete.html    # Athlete dashboard
-    └── js/
-        ├── api.js      # API calls
-        ├── coach.js    # Coach logic
-        └── athlete.js  # Athlete logic
-```
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js installed
-- Supabase account (free)
-- Google Gemini API key (free)
+- Node.js v18+
+- npm
+- Supabase account
 
 ### Installation
 
-1. **Clone the repo**
 ```bash
-   git clone https://github.com/YOUR_USERNAME/gymapp.git
-   cd gymapp
+# Clone the repo
+git clone https://github.com/YOUR_USERNAME/gymapp.git
+cd gymapp
+
+# Install backend
+cd server
+npm install
+
+# Create .env file
+cp .env.example .env
+# Edit .env with your credentials
+
+# Start backend
+npm start
 ```
 
-2. **Install dependencies**
+### Running React Frontend
+
 ```bash
-   cd server
-   npm install
+cd frontend-react
+npm install
+npm run dev
 ```
 
-3. **Set up Supabase**
-   - Create account at https://supabase.com
-   - Create new project
-   - Run SQL to create tables (see PROJECT_PLAN.md)
-
-4. **Set up environment variables**
-   
-   Create `server/.env` file:
-```
-   GEMINI_API_KEY=your_gemini_key
-   SUPABASE_URL=your_supabase_url
-   SUPABASE_KEY=your_supabase_anon_key
-```
-
-5. **Start the server**
-```bash
-   node index.js
-```
-
-6. **Open in browser**
-```
-   http://localhost:3000
-```
-
-## 🔮 Roadmap
-
-- [x] Member management (CRUD)
-- [x] Subscription tracking
-- [x] Program requests
-- [x] PDF generation
-- [x] Exercise video library
-- [x] AI-powered tips
-- [x] Supabase database (in progress)
-- [ ] Real authentication
-- [ ] QR code login
-- [ ] Gamification (XP, badges)
-- [ ] Predictive analytics
-- [ ] AI form checker
-- [ ] React frontend
-- [ ] Spring Boot backend
-
-## 📝 License
-
-This project is open source and available under the MIT License.
-
-## 👨‍💻 Author
-
-**Your Name**
-- GitHub: @KalfasK (https://github.com/kalfask)
+Opens at `http://localhost:5173`
 
 ---
 
-Made with ❤️ and lots of ☕
+## 📁 Project Structure
+
+```
+gymapp/
+├── server/              # Backend (Express + Supabase)
+├── frontend/            # Original vanilla JS
+├── frontend-react/      # New React + Tailwind
+└── README.md
+```
+
+---
+
+## 🔑 Environment Variables
+
+Create `.env` in `/server`:
+
+```env
+SUPABASE_URL=your_supabase_url
+SUPABASE_KEY=your_service_role_key
+JWT_SECRET=your_jwt_secret
+GEMINI_API_KEY=your_gemini_key
+```
+
+---
+
+## 📖 Documentation
+
+See [GYMAPP_TEAM_DOCUMENTATION.md](./GYMAPP_TEAM_DOCUMENTATION.md) for:
+- Complete API reference
+- Database schema
+- Authentication guide
+- Gamification system
+- Future features
+
+---
+
+## 🎮 Gamification
+
+| Level | Title | XP Required |
+|-------|-------|-------------|
+| 1 | Beginner | 0 |
+| 2 | Rookie | 100 |
+| 3 | Regular | 300 |
+| 5 | Athlete | 1000 |
+| 10 | Master | 10000 |
+
+**Badges:** 🌟 First Steps • 🔥 On Fire • 💪 Dedicated • 👑 Elite
+
+---
+
+## 🔮 Coming Soon
+
+- [ ] 💬 Chat System
+- [ ] 📝 Workout Logging
+- [ ] ⚖️ Progress Tracking
+- [ ] 📸 Progress Photos
+- [ ] 🤖 AI Form Checker
+- [ ] 🔗 Trainer-Athlete Token System
+
+---
+
+## 👥 Team
+
+Built as a thesis project.
+
+---
+
+## 📄 License
+
+MIT License
