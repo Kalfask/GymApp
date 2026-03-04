@@ -5,6 +5,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 // import CoachDashboard from './pages/CoachDashboard';
  import AthleteDashboard from './pages/AthleteDashboard';
+ import Home from './pages/Home';
+ import WorkoutSession from './pages/WorkoutSession';
 
 function App() {
     return (
@@ -19,16 +21,18 @@ function App() {
 
                 <Routes>
                     {/* --- Public Auth Routes (Full Screen) --- */}
+                    <Route path="/" element={<Home/>}></Route>
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
 
                     {/* --- Private/Internal App Routes --- */}
                     {/* <Route path="/coach" element={<CoachDashboard />} /> */}
                     { <Route path="/athlete" element={<AthleteDashboard />} /> }
+                    <Route path="/workout" element={<WorkoutSession />} />
 
                     {/* --- Catch-all / Default Route --- */}
                     {/* If someone goes to localhost:5173/, send them to login automatically */}
-                    <Route path="*" element={<Navigate to="/login" replace />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
 
             </div>
