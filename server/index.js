@@ -93,6 +93,11 @@ app.post('/auth/register', async (req, res) => {
             .insert({ email, password: hashedPassword, name, phone, role:'athlete'})
             .select()
             .single();
+
+            if(!insertError)
+            {
+                return res.status(200).json({ message: "Registration successful" });
+            }
         if (insertError) {
             throw insertError;
         }

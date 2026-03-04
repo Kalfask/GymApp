@@ -1,20 +1,14 @@
 @import "tailwindcss";
 
+/* If you have a tailwind.config.js file in your project, use these 3 lines: */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
-
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* OR, if you are using the brand new Tailwind v4 (no config file), use ONLY this line instead: */
+/* @import "tailwindcss"; */
 
 html, body {
-    min-height: 100vh;
     background-color: #0f172a;
 }
 

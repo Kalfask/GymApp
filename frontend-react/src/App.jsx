@@ -1,22 +1,40 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+// Import your pages
 import Login from './pages/Login';
+import Register from './pages/Register';
+// import CoachDashboard from './pages/CoachDashboard';
+ import AthleteDashboard from './pages/AthleteDashboard';
 
 function App() {
     return (
-        <BrowserRouter>
-            <Routes>
-                <Route path="/" element={<Navigate to="/login" />} />
-                <Route path="/login" element={<Login />} />
-            </Routes>
-        </BrowserRouter>
+        <Router>
+            {/* CRITICAL: Notice how this wrapper div has NO padding (like p-4) 
+              and NO max-width constraints. It simply provides the base background 
+              color and font for the entire app. 
+            */}
+            <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-sky-500/30">
+                
+                {/* Global Navbar could go here later if you want it on every page */}
+
+                <Routes>
+                    {/* --- Public Auth Routes (Full Screen) --- */}
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+
+                    {/* --- Private/Internal App Routes --- */}
+                    {/* <Route path="/coach" element={<CoachDashboard />} /> */}
+                    { <Route path="/athlete" element={<AthleteDashboard />} /> }
+
+                    {/* --- Catch-all / Default Route --- */}
+                    {/* If someone goes to localhost:5173/, send them to login automatically */}
+                    <Route path="*" element={<Navigate to="/login" replace />} />
+                </Routes>
+
+            </div>
+        </Router>
     );
 }
 
 export default App;
-
 
