@@ -205,13 +205,16 @@ function AthleteDashboard() {
                                 <p className="text-sm font-bold leading-none">{stats?.streak || 0}</p>
                             </div>
                         </div>
-                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl px-4 py-2 flex items-center gap-3 backdrop-blur-sm">
+                        <button 
+                            onClick={() => navigate('/leaderboard')}
+                            className="bg-slate-800/50 border border-slate-700/50 hover:border-yellow-500/50 hover:bg-slate-800 rounded-xl px-4 py-2 flex items-center gap-3 backdrop-blur-sm transition-all cursor-pointer"
+>
                             <Trophy className="text-yellow-400 w-5 h-5" />
-                            <div>
+                            <div className="text-left">
                                 <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-0.5">Points</p>
                                 <p className="text-sm font-bold leading-none">{stats?.xp || 0}</p>
                             </div>
-                        </div>
+                        </button>
                     </div>
                 </div>
 
@@ -253,10 +256,9 @@ function AthleteDashboard() {
                                                                     <span className="text-sm font-medium text-slate-200">
                                                                         {typeof exercise === 'string' ? exercise : exercise.name}
                                                                     </span>
-                                                                    {typeof exercise !== 'string' && (exercise.sets || exercise.reps) && (
+                                                                    {typeof exercise !== 'string' && (exercise.setsReps) && (
                                                                         <span className="text-xs text-slate-400">
-                                                                            {exercise.sets && `${exercise.sets} sets `}
-                                                                            {exercise.reps && `× ${exercise.reps} reps`}
+                                                                            {exercise.setsReps && ` ${exercise.setsReps} reps`}
                                                                         </span>
                                                                     )}
                                                                 </li>

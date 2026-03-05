@@ -1,12 +1,13 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 // Import your pages
-import Login from './pages/Login';
-import Register from './pages/Register';
-// import CoachDashboard from './pages/CoachDashboard';
+ import Login from './pages/Login';
+ import Register from './pages/Register';
+ import CoachDashboard from './pages/CoachDashboard';
  import AthleteDashboard from './pages/AthleteDashboard';
  import Home from './pages/Home';
  import WorkoutSession from './pages/WorkoutSession';
+ import Leaderboard from './pages/Leaderboard';
 
 function App() {
     return (
@@ -26,9 +27,10 @@ function App() {
                     <Route path="/register" element={<Register />} />
 
                     {/* --- Private/Internal App Routes --- */}
-                    {/* <Route path="/coach" element={<CoachDashboard />} /> */}
+                    { <Route path="/coach" element={<CoachDashboard />} /> }
                     { <Route path="/athlete" element={<AthleteDashboard />} /> }
                     <Route path="/workout" element={<WorkoutSession />} />
+                    <Route path="/leaderboard" element={<Leaderboard/>}></Route>
 
                     {/* --- Catch-all / Default Route --- */}
                     {/* If someone goes to localhost:5173/, send them to login automatically */}
