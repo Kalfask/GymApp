@@ -191,22 +191,29 @@ function CoachDashboard() {
         ));
     };
 
-    const handleCreateProgram = async (e) => {
-        e.preventDefault();
-        setIsCreatingProgram(true);
-        try {
-            await createProgram(selectedRequest.member.id, programDays);
-            alert(`Program created for ${selectedRequest.member.name}!`);
-            setShowProgramModal(false);
-            setSelectedRequest(null);
-            setProgramDays([{ day: 'Day 1', exercises: [{ name: '', sets: '', reps: '', notes: '' }] }]);
-            fetchRequests();
-        } catch {
-            alert("Failed to create program.");
-        }
-        setIsCreatingProgram(false);
-    };
-
+ const handleCreateProgram = async (e) => {
+    e.preventDefault();
+    setIsCreatingProgram(true);
+    try {
+        const formattedDays = programDays.map(d => ({
+            dayName: d.day,
+            exercises: d.exercises.map(ex => ({
+                name: ex.name,
+                setsReps: `${ex.sets} x ${ex.reps}`,
+                notes: ex.notes
+            }))
+        }));
+        await createProgram(selectedRequest.member.id, formattedDays);
+        alert(`Program created for ${selectedRequest.member.name}!`);
+        setShowProgramModal(false);
+        setSelectedRequest(null);
+        setProgramDays([{ day: 'Day 1', exercises: [{ name: '', sets: '', reps: '', notes: '' }] }]);
+        fetchRequests();
+    } catch {
+        alert("Failed to create program.");
+    }
+    setIsCreatingProgram(false);
+};
     const openProgramModal = (request) => {
         setSelectedRequest(request);
         setProgramDays([{ day: 'Day 1', exercises: [{ name: '', sets: '', reps: '', notes: '' }] }]);
