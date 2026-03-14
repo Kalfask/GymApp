@@ -8,7 +8,8 @@ import {
 import {
     getCurrentUser, logout, getMembers, assignPlan,
     addExerciseVideo, getExerciseVideos, deleteExerciseVideo,
-    getMemberRequest, createProgram, getYoutubeEmbedUrl
+    getMemberRequest, createProgram, getYoutubeEmbedUrl,
+    assignPlanCustom
 } from '../api';
 
 function CoachDashboard() {
@@ -23,6 +24,7 @@ function CoachDashboard() {
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [selectedAthlete, setSelectedAthlete] = useState(null);
     const [planInput, setPlanInput] = useState('');
+    const [monthsInput, setMonthsInput] = useState('');
     const [isAssigning, setIsAssigning] = useState(false);
 
     // Video States
@@ -116,10 +118,11 @@ function CoachDashboard() {
         e.preventDefault();
         setIsAssigning(true);
         try {
-            await assignPlan(selectedAthlete.id, planInput);
+            await assignPlanCustom(selectedAthlete.id, planInput, monthsInput);
             alert(`Plan assigned to ${selectedAthlete.name} successfully!`);
             setShowAssignModal(false);
             setPlanInput('');
+            setMonthsInput('');
             fetchData();
         } catch {
             alert("Failed to assign plan.");
@@ -626,6 +629,18 @@ function CoachDashboard() {
                                     className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 transition-colors"
                                 />
                             </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-400 mb-1.5">Months</label>
+                                <input
+                                    type="number"
+                                    required
+                                    min="1"
+                                    placeholder="e.g., 3"
+                                    value={monthsInput}
+                                    onChange={(e) => setMonthsInput(e.target.value)}
+                                    className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 transition-colors"
+                                />
+                        </div>
                             <button
                                 type="submit"
                                 disabled={isAssigning}

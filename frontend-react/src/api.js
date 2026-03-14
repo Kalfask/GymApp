@@ -203,6 +203,17 @@ function getAuthToken() {
     return await response.json();
 }
 
+export async function assignPlanCustom(memberId, plan, mo)
+{
+    const response = await fetch(`${API}/members/${memberId}/assign-plan-custom`,
+    {
+                method: 'POST',
+                headers: getAuthToken(),
+                body: JSON.stringify({ newplan: plan , months:mo})
+    });
+    return await response.json();
+}
+
  export async function downloadProgram(memberId) {
     try {
         const response = await fetch(`${API}/members/${memberId}/download`, {

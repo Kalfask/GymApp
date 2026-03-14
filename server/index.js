@@ -465,6 +465,38 @@ app.post('/members/:id/assign-plan', async (req,res) =>
        res.status(500).json({ message: 'Failed to find member' });
        return;
     }
+});
+
+    //Asign plan new version
+    app.post('/members/:id/assign-plan-custom', async (req,res) =>
+{
+    const memberid = req.params.id;
+    const {newplan, months} = req.body;
+    try{
+        const {data: member,error: memberError} = await supabase
+    .from("members")
+    .select("*")
+    .eq("id",memberid)
+    .single();
+
+    if(memberError){
+        throw memberError;
+    }
+
+    if(member.plan)
+    {
+        console.log("Member already has a plan with plan: ", member.plan);
+        res.json({message: 'member already has a plan'});
+        return;
+    }
+
+    }
+    catch(error)
+    {
+       console.log("error finding the member",error)
+       res.status(500).json({ message: 'Failed to find member' });
+       return;
+    }
     
 
     // Calculate end date based on plan
@@ -472,13 +504,14 @@ app.post('/members/:id/assign-plan', async (req,res) =>
     const end_date = new Date();
 
         let newEndDate = new Date(end_date);
-        if (newplan === 'monthly') {
+        newEndDate.setMonth(newEndDate.getMonth() + parseInt(months));
+        /*if (newplan === 'monthly') {
             newEndDate.setMonth(newEndDate.getMonth() + 1);
         } else if (newplan === '3-month') {
             newEndDate.setMonth(newEndDate.getMonth() + 3);
         } else if (newplan === 'yearly') {
             newEndDate.setFullYear(newEndDate.getFullYear() + 1);
-        }
+        }*/
 
         try{
             const{data, error} = await supabase
@@ -1573,3 +1606,4 @@ app.get('/leaderboard', async (req, res) => {
 app.listen(port, () => {
     console.log(`🏋️ Gym server running at http://localhost:${port}`);
 });
+
