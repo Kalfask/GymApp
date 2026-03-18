@@ -470,8 +470,18 @@ app.post('/members/:id/assign-plan', async (req,res) =>
     //Asign plan new version
     app.post('/members/:id/assign-plan-custom', async (req,res) =>
 {
+
+    // Calculate end date based on plan
+    const start_date = new Date();
+    const end_date = new Date();
+
+    
+
     const memberid = req.params.id;
     const {newplan, months} = req.body;
+    
+    let newEndDate = new Date(end_date);
+    newEndDate.setMonth(newEndDate.getMonth() + parseInt(months));
     try{
         const {data: member,error: memberError} = await supabase
     .from("members")
@@ -485,8 +495,19 @@ app.post('/members/:id/assign-plan', async (req,res) =>
 
     if(member.plan)
     {
+
+        newEndDate = new Date(member.end_date);
+        newEndDate.setMonth(newEndDate.getMonth() + parseInt(months));
         console.log("Member already has a plan with plan: ", member.plan);
-        res.json({message: 'member already has a plan'});
+        await supabase
+            .from("members")
+            .update({ plan: newplan, end_date: newEndDate.toISOString() })
+            .eq('id', memberid);
+        
+
+        res.json({message: 'member already has a plan. renewed its plan',
+                success: true
+        });
         return;
     }
 
@@ -494,14 +515,16 @@ app.post('/members/:id/assign-plan', async (req,res) =>
     catch(error)
     {
        console.log("error finding the member",error)
-       res.status(500).json({ message: 'Failed to find member' });
+       res.status(500).json({ message: 'Failed to find member',
+                    success: false
+        });
        return;
     }
     
 
     // Calculate end date based on plan
-    const start_date = new Date();
-    const end_date = new Date();
+    /*const start_date = new Date();
+    const end_date = new Date();/*
 
         let newEndDate = new Date(end_date);
         newEndDate.setMonth(newEndDate.getMonth() + parseInt(months));
@@ -525,7 +548,9 @@ app.post('/members/:id/assign-plan', async (req,res) =>
                 throw error;
             }
             console.log('Membership assigned for member:', memberid);
-            res.json({ message: 'Membership assigned' });
+            res.json({ message: 'Membership assigned',
+                        success: true
+             });
 
         }catch(error)
         {

@@ -118,12 +118,22 @@ function CoachDashboard() {
         e.preventDefault();
         setIsAssigning(true);
         try {
-            await assignPlanCustom(selectedAthlete.id, planInput, monthsInput);
-            alert(`Plan assigned to ${selectedAthlete.name} successfully!`);
-            setShowAssignModal(false);
-            setPlanInput('');
-            setMonthsInput('');
-            fetchData();
+            const response = await assignPlanCustom(selectedAthlete.id, planInput, monthsInput);
+            console.log(response);
+            //const res = await response.json();
+            if(!response.success)
+            {
+                alert("Failed to assign plan.");
+            }
+            else
+            {
+                alert(`Plan assigned to ${selectedAthlete.name} successfully!`);
+                setShowAssignModal(false);
+                setPlanInput('');
+                setMonthsInput('');
+                fetchData();
+            }
+            
         } catch {
             alert("Failed to assign plan.");
         }
