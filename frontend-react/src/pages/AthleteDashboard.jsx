@@ -8,7 +8,7 @@ import {
 import { 
     getCurrentUser, logout, getProgram, 
     getStats, completeWorkout, requestProgram, downloadProgram,
-    getAITips, getExerciseVideos, getYoutubeEmbedUrl // <-- Added Video APIs
+    getAITips, getExerciseVideos, getYoutubeEmbedUrl, getMemberRequest
 } from '../api';
 
 function AthleteDashboard() {
@@ -21,6 +21,7 @@ function AthleteDashboard() {
     const [expandedDay, setExpandedDay] = useState(null);
     
     // Modal States
+    const [programRequested, setProgramRequested] = useState(false);
     const [showRequestModal, setShowRequestModal] = useState(false);
     const [requestForm, setRequestForm] = useState({ goal: '', level: 'beginner' });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,13 +48,19 @@ function AthleteDashboard() {
 
         const fetchDashboardData = async () => {
             try {
-                const [programData, statsData] = await Promise.all([
+                const [programData, statsData, requestData] = await Promise.all([
                     getProgram(currentUser.id).catch(() => null),
-                    getStats(currentUser.id).catch(() => ({ workoutsCompleted: 0, points: 0 }))
+                    getStats(currentUser.id).catch(() => ({ workoutsCompleted: 0, points: 0 })),
+                    getMemberRequest(currentUser.id).catch(()=>null)
                 ]);
                 
                 if (programData && programData.program) {
                     setProgram(programData.program);
+                    
+                }
+
+                if (!programData?.program && requestData && !requestData.error) {
+                    setProgramRequested(true);
                 }
                 
                 if (statsData && !statsData.error) {
@@ -85,7 +92,8 @@ function AthleteDashboard() {
         setIsSubmitting(true);
         try {
             await requestProgram(user.id, requestForm.goal, requestForm.level);
-            alert("Program requested successfully! Your coach will review it soon.");
+            //alert("Program requested successfully! Your coach will review it soon.");
+            setProgramRequested(true);
             setShowRequestModal(false);
             setRequestForm({ goal: '', level: 'beginner' });
         } catch (error) {
@@ -228,10 +236,15 @@ function AthleteDashboard() {
                                     Your Active Program
                                 </h2>
                                 {program && (
+                                <div className="flex gap-2">
+                                    <button onClick={() => setShowRequestModal(true)} className="text-xs bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors border border-indigo-500/40">
+                                        <MessageSquare className="w-3 h-3" /> New Request
+                                    </button>
                                     <button onClick={handleDownloadProgram} className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors border border-slate-700">
                                         <Download className="w-3 h-3" /> PDF
                                     </button>
-                                )}
+                                </div>
+                            )}
                             </div>
 
                             {program ? (
@@ -282,9 +295,19 @@ function AthleteDashboard() {
                                 </div>
                             ) : (
                                 <div className="text-center py-10 px-4">
-                                    <button onClick={() => setShowRequestModal(true)} className="bg-gradient-to-r from-sky-500 to-indigo-500 text-white font-semibold py-2.5 px-6 rounded-xl transition-all">
-                                        Request Custom Program
-                                    </button>
+                                    {programRequested ? (
+                                        <div className="space-y-3">
+                                            <div className="w-12 h-12 mx-auto bg-sky-500/10 border border-sky-500/30 rounded-full flex items-center justify-center">
+                                                <Loader2 className="w-6 h-6 text-sky-400" />
+                                            </div>
+                                            <h3 className="text-lg font-semibold text-white">Program Requested!</h3>
+                                            <p className="text-sm text-slate-400 max-w-sm mx-auto">Your coach has been notified and will prepare your custom program soon.</p>
+                                        </div>
+                                    ) : (
+                                        <button onClick={() => setShowRequestModal(true)} className="bg-gradient-to-r from-sky-500 to-indigo-500 text-white font-semibold py-2.5 px-6 rounded-xl transition-all">
+                                            Request Custom Program
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>
